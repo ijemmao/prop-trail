@@ -1,7 +1,7 @@
 {
 	"name": "prop-trail",
 	"displayName": "prop-trail",
-	"description": "track the path of props passed throughout react components",
+	"description": "track the paths of props passed throughout react components",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.38.0"
