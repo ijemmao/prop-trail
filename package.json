@@ -14,6 +14,14 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+    "languages": [
+      {
+        "id": "javascriptreact",
+        "extensions": [".js"],
+        "aliases": ["React", "js"],
+        "firstLine": "import React, { Component } from 'react';"
+      }
+    ],
     "commands": [
       {
         "command": "extension.printReferences",

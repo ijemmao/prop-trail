@@ -16,6 +16,16 @@ function activate(context) {
         const uri = provider_1.encodeLocation(editor.document.uri, editor.selection.active);
         return vscode_1.workspace.openTextDocument(uri).then(doc => vscode_1.window.showTextDocument(doc, editor.viewColumn + 1));
     });
+    // Register hover functionality
+    vscode_1.languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
+        provideHover(document, position, token) {
+            const range = document.getWordRangeAtPosition(position);
+            const word = document.getText(range);
+            return {
+                contents: ['Hover Content', word]
+            };
+        }
+    });
     context.subscriptions.push(provider, commandRegistration, providerRegistrations);
 }
 exports.activate = activate;

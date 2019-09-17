@@ -1,23 +1,5 @@
-export default class Person {
-  _firstName;
-  _lastName;
-  _age;
+import React, { Component } from 'react';
 
-  constructor(firstName, lastName, age) {
-    this._firstName = firstName;
-    this._lastName = lastName;
-    this._age = age;
-  }
+const Person = (props) => props
 
-  get firstName() {
-    return this._firstName;
-  }
-
-  get lastName() {
-    return this._lastName;
-  }
-
-  get age() {
-    return this._age;
-  }
-}
+export default Person;

@@ -53,7 +53,7 @@ export default class Provider implements vscode.TextDocumentContentProvider, vsc
     
     // TODO: vscode.executeReferenceProvider to see all references
     // TODO: vscode.executeDefinitionProvider to see all references
-    return vscode.commands.executeCommand<vscode.Location[]>('vscode.executeDefinitionProvider', target, pos).then(locations => {
+    return vscode.commands.executeCommand<vscode.Location[]>('vscode.executeReferenceProvider', target, pos).then(locations => {
       locations = locations || [];
 
       // sort by locations and shuffle to begin from target resource

@@ -41,7 +41,7 @@ class Provider {
         const [target, pos] = decodeLocation(uri);
         // TODO: vscode.executeReferenceProvider to see all references
         // TODO: vscode.executeDefinitionProvider to see all references
-        return vscode.commands.executeCommand('vscode.executeDefinitionProvider', target, pos).then(locations => {
+        return vscode.commands.executeCommand('vscode.executeReferenceProvider', target, pos).then(locations => {
             locations = locations || [];
             // sort by locations and shuffle to begin from target resource
             let idx = 0;
