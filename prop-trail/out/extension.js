@@ -1,18 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = require("vscode");
+const vscode = require("vscode");
 const babylon = require("babylon");
 const babel_traverse_1 = require("babel-traverse");
 const t = require("babel-types");
-let elements = [];
-let attribute = null;
 function activate(context) {
     let disposable = vscode_1.commands.registerCommand('extension.propTrail', () => {
         vscode_1.window.showInformationMessage('Hello World!');
     });
     vscode_1.languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
         provideHover(document, position, token) {
-            let number = 0;
             const text = document.getText();
             const ast = babylon.parse(text, {
                 sourceType: "module", plugins: [
@@ -29,41 +27,17 @@ function activate(context) {
             });
             babel_traverse_1.default(ast, {
                 enter(path) {
-                    number += 1;
-                    let grabbedName;
                     const { uri: target } = document;
                     const range = document.getWordRangeAtPosition(position);
                     const hoverName = document.getText(range);
                     if (t.isJSXOpeningElement(path.node)) {
-                        if (typeof path.node.name !== 'string') {
-                            (path.node.name.object)
-                                ? grabbedName = path.node.name.object.name
-                                : grabbedName = path.node.name.name;
+                        console.log('okokokok', path.node);
+                        const component = path.node;
+                        const attribute = attributeInElement(path.node, hoverName);
+                        console.log(component);
+                        if (attribute) {
+                            jumpToComponentDefinition(component, target);
                         }
-                        else {
-                            grabbedName = path.node.name;
-                        }
-                        // console.log(grabbedName, hoverName);
-                        // Focusing on hovering component
-                        if (grabbedName === hoverName) {
-                            // Adding JSXElement to global array)
-                            elements.push({ name: grabbedName, attributes: path.node.attributes });
-                            console.log(path.node);
-                            console.log('right here', number);
-                            // commands.executeCommand<vscode.Location[]>('vscode.executeDefinitionProvider', target, position).then(locations => {
-                            //   const referenceRange = locations && locations[0];
-                            //   console.log(referenceRange);
-                            // })
-                        }
-                    }
-                    else if (t.isJSXAttribute(path.node)) {
-                        grabbedName = path.node.name.name;
-                        // attribute = path.node;
-                        // const element = attributeInElement(elements, attribute);
-                        // console.log('what it do', element);
-                        // if (grabbedName === hoverName && elements) {
-                        //   console.log(path.node);
-                        // }
                     }
                 }
             });
@@ -75,25 +49,28 @@ function activate(context) {
     context.subscriptions.push(disposable);
 }
 exports.activate = activate;
-const attributeInElement = (elements, attribute) => {
-    let index = 0;
-    let inElement = false;
-    let element;
-    while (inElement === false || index < elements.length) {
-        const currentElement = elements[index];
-        if (!inElement) {
-            currentElement.attributes.forEach((currentAttribute) => {
-                if (currentAttribute.name.name === attribute.name.name) {
-                    inElement = true;
-                    element = currentElement;
-                }
+const attributeInElement = (element, attribute) => {
+    for (const currentAttribute of element.attributes) {
+        if (currentAttribute.name && currentAttribute.name.name === attribute)
+            return currentAttribute;
+        else if (currentAttribute.argument && currentAttribute.argument.name === attribute)
+            return currentAttribute;
+    }
+};
+const jumpToComponentDefinition = (component, target) => {
+    const componentPosition = new vscode.Position(component.loc.start.line - 1, component.loc.start.column + 3);
+    vscode.commands.executeCommand('vscode.executeDefinitionProvider', target, componentPosition).then(references => {
+        references = references || [];
+        if (references) {
+            const reference = references[0];
+            const uri = vscode.Uri.file(reference.uri.path);
+            console.log(reference);
+            vscode.workspace.openTextDocument(uri).then(document => {
+                vscode.window.showTextDocument(document, -2, true).then(editor => {
+                });
             });
         }
-        index += 1;
-    }
-    if (inElement)
-        return element;
-    return undefined;
+    });
 };
 function deactivate() { }
 exports.deactivate = deactivate;

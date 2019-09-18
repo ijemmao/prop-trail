@@ -4,18 +4,14 @@ import * as babylon from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
 
-let elements: Array<any> = [];
-let attribute: any = null;
-
 export function activate(context: vscode.ExtensionContext) {
   
 	let disposable = commands.registerCommand('extension.propTrail', () => {
     window.showInformationMessage('Hello World!');
   });
-  
+
   languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact'}, {
     provideHover(document, position, token) {
-      let number = 0;
       const text = document.getText();
       const ast = babylon.parse(text, {
         sourceType: "module", plugins: [
@@ -30,40 +26,17 @@ export function activate(context: vscode.ExtensionContext) {
           'asyncGenerators'] });
       traverse(ast, {
         enter(path: any) {
-          number += 1;
-          let grabbedName;
           const { uri: target } = document;
           const range = document.getWordRangeAtPosition(position);
           const hoverName = document.getText(range);
           if (t.isJSXOpeningElement(path.node)) {
-            if (typeof path.node.name !== 'string') {
-              (path.node.name.object)
-                ? grabbedName = path.node.name.object.name
-                : grabbedName = path.node.name.name;
-            } else {
-              grabbedName = path.node.name;
+            console.log('okokokok', path.node);
+            const component = path.node;
+            const attribute = attributeInElement(path.node, hoverName);
+            console.log(component);
+            if (attribute) {
+              jumpToComponentDefinition(component, target);
             }
-
-            // console.log(grabbedName, hoverName);
-            // Focusing on hovering component
-            if (grabbedName === hoverName) {
-              // Adding JSXElement to global array)
-              elements.push({ name: grabbedName, attributes: path.node.attributes });
-              console.log(path.node);
-              console.log('right here', number);
-              // commands.executeCommand<vscode.Location[]>('vscode.executeDefinitionProvider', target, position).then(locations => {
-              //   const referenceRange = locations && locations[0];
-              //   console.log(referenceRange);
-              // })
-            }
-          } else if (t.isJSXAttribute(path.node)) {
-            grabbedName = path.node.name.name;
-            // attribute = path.node;
-            // const element = attributeInElement(elements, attribute);
-            // console.log('what it do', element);
-            // if (grabbedName === hoverName && elements) {
-            //   console.log(path.node);
-            // }
           }
         }
       })
@@ -76,24 +49,29 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-const attributeInElement = (elements: Array<any>, attribute: any) => {
-  let index = 0;
-  let inElement = false;
-  let element: any;
-  while (inElement === false || index < elements.length) {
-    const currentElement = elements[index];
-    if (!inElement) {
-      currentElement.attributes.forEach((currentAttribute: any) => {
-        if (currentAttribute.name.name === attribute.name.name) {
-          inElement = true;
-          element = currentElement;
-        }
+const attributeInElement = (element: any, attribute: any) => {
+  for (const currentAttribute of element.attributes) {
+    if (currentAttribute.name && currentAttribute.name.name === attribute) return currentAttribute;
+    else if (currentAttribute.argument && currentAttribute.argument.name === attribute) return currentAttribute;
+  }
+}
+
+const jumpToComponentDefinition = (component: any, target: any) => {
+  const componentPosition = new vscode.Position(component.loc.start.line - 1, component.loc.start.column + 3);
+  vscode.commands.executeCommand<vscode.Location[]>('vscode.executeDefinitionProvider', target, componentPosition).then(references => {
+    references = references || [];
+
+    if (references) {
+      const reference = references[0];
+      const uri = vscode.Uri.file(reference.uri.path);
+      console.log(reference)
+      vscode.workspace.openTextDocument(uri).then(document => {
+        vscode.window.showTextDocument(document, -2, true).then(editor => {
+
+        });
       })
     }
-    index += 1;
-  }
-  if (inElement) return element;
-  return undefined;
+  })
 }
 
 export function deactivate() {}
