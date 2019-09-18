@@ -4,6 +4,8 @@ const vscode_1 = require("vscode");
 const babylon_1 = require("babylon");
 const babel_traverse_1 = require("babel-traverse");
 const t = require("babel-types");
+const nodeDependencies_1 = require("./nodeDependencies");
+const TestView_1 = require("./TestView");
 class GoCodeLensProvider {
     provideCodeLenses(document, token) {
         const range = new vscode_1.Range(0, 0, 0, 10);
@@ -26,6 +28,7 @@ function activate(context) {
     let disposable = vscode_1.commands.registerCommand('extension.propTrail', () => {
         vscode_1.window.showInformationMessage('Hello World!');
     });
+    vscode_1.window.registerTreeDataProvider('propTrailReferences', new nodeDependencies_1.DepNodeProvider(vscode_1.workspace.rootPath || ''));
     const codeLensProvider = vscode_1.languages.registerCodeLensProvider({ scheme: 'file', language: 'javascriptreact' }, new GoCodeLensProvider());
     vscode_1.languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
         provideHover(document, position, token) {
@@ -49,6 +52,7 @@ function activate(context) {
         }
     });
     context.subscriptions.push(disposable, codeLensProvider);
+    new TestView_1.TestView(context);
 }
 exports.activate = activate;
 const attributeInElement = (element, attribute) => {

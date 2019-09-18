@@ -19,6 +19,8 @@ import {
 import { parse } from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
+import { DepNodeProvider } from './nodeDependencies';
+import { TestView } from './TestView';
 
 class GoCodeLensProvider implements CodeLensProvider {
   public provideCodeLenses(document: TextDocument, token: CancellationToken):
@@ -48,6 +50,8 @@ export function activate(context: ExtensionContext) {
     window.showInformationMessage('Hello World!');
   });
 
+  window.registerTreeDataProvider('propTrailReferences', new DepNodeProvider(workspace.rootPath || ''));
+
   const codeLensProvider = languages.registerCodeLensProvider({ scheme: 'file', language: 'javascriptreact' }, new GoCodeLensProvider());
 
   languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact'}, {
@@ -73,6 +77,8 @@ export function activate(context: ExtensionContext) {
   })
 
   context.subscriptions.push(disposable, codeLensProvider);
+
+  new TestView(context);
 }
 
 const attributeInElement = (element: any, attribute: any) => {
