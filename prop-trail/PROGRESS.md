@@ -4,6 +4,7 @@
 * Why a VSCode extension?
 * What I learned
 * Moving forward
+* Bug sheet
 
 ### What a VSCode Extension?
 I started working at Squarespace as a Frontend Software engineer in mid-August, only two months after graduating from college. Before joining the team, I told my manager that I was really familiar with React and Redux. I came in very confident in my skill in manuevering throught React codebases. I quickly realized that what I was writing in college was absolute child's play.
@@ -26,3 +27,7 @@ What are ASTs? They're Abstrack Syntax Trees, which are tree representations of 
 So this plugin has lead to me where I am right now. 
 
 ### Moving Forward
+
+### Bug Sheet
+* Whenever an unrelated variable has the same name as a prop, the extension will jump to component definition
+  * Check to see if hovered element is inside component (`loc` comparison?)
