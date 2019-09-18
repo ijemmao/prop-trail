@@ -29,5 +29,5 @@ So this plugin has lead to me where I am right now.
 ### Moving Forward
 
 ### Bug Sheet
-* Whenever an unrelated variable has the same name as a prop, the extension will jump to component definition
+* **Fixed** Whenever an unrelated variable has the same name as a prop, the extension will jump to component definition
   * Check to see if hovered element is inside component (`loc` comparison?)

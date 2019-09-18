@@ -3,10 +3,8 @@ import {
   languages,
   window,
   workspace,
-  CancellationToken,
   ExtensionContext,
   DocumentHighlight,
-  DocumentHighlightProvider,
   Location,
   Position,
   Range,
@@ -14,25 +12,15 @@ import {
   TextDocumentShowOptions,
   Uri
 } from 'vscode';
-import * as babylon from 'babylon';
+import { parse } from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
-
-class GoDocumentHighlightProvider implements DocumentHighlightProvider {
-  public provideDocumentHighlights(document: TextDocument, position: Position, token: CancellationToken):
-    DocumentHighlight[] | Thenable<DocumentHighlight[]> {
-      console.log('living for wahat');
-      return [];
-    }
-}
 
 export function activate(context: ExtensionContext) {
   
 	let disposable = commands.registerCommand('extension.propTrail', () => {
     window.showInformationMessage('Hello World!');
   });
-
-  const highlightProvider = languages.registerDocumentHighlightProvider({ scheme: 'file', language: 'javascriptreact' }, new GoDocumentHighlightProvider());
 
   languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact'}, {
     provideHover(document, position, token) {
@@ -44,18 +32,19 @@ export function activate(context: ExtensionContext) {
           const hoverName = document.getText(range);
           if (t.isJSXOpeningElement(path.node)) {
             const component = path.node;
+            const { loc: { start: { line: componentStartLine } } } = path.node;
             const attribute = attributeInElement(path.node, hoverName);
-            if (attribute) {
+            if (attribute && componentStartLine <= position.line) {
               jumpToComponentDefinition(component, target, hoverName);
             }
           }
         }
       });
-      return { contents: ['Testing information'] }
+      return { contents: ['Prop Trail'] }
     }
   })
 
-  context.subscriptions.push(disposable)//, highlightProvider);
+  context.subscriptions.push(disposable)
 }
 
 const attributeInElement = (element: any, attribute: any) => {
@@ -67,7 +56,7 @@ const attributeInElement = (element: any, attribute: any) => {
 
 const generateAst = (document: TextDocument) => {
   const text = document.getText();
-  return babylon.parse(text, {
+  return parse(text, {
     sourceType: "module", plugins: [
       'jsx',
       'flow',
@@ -88,11 +77,10 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObject: any
     const startPosition = new Position(startLine - 1, startColumn);
     const endPosition = new Position(endLine - 1, endColumn);
     commands.executeCommand<DocumentHighlight[]>('vscode.executeDocumentHighlights', uri, startPosition).then(highlights => {
-      console.log('position', highlights);
 
       const range = new Range(startPosition, endPosition);
-      const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: -2 }
-      window.showTextDocument(document,options).then(editor => {
+      const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
+      window.showTextDocument(document, options).then(editor => {
 
       });
     })
