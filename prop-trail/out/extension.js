@@ -4,10 +4,29 @@ const vscode_1 = require("vscode");
 const babylon_1 = require("babylon");
 const babel_traverse_1 = require("babel-traverse");
 const t = require("babel-types");
+class GoCodeLensProvider {
+    provideCodeLenses(document, token) {
+        const range = new vscode_1.Range(0, 0, 0, 10);
+        // const command: Command = { title: 'showContextMenu', command: 'editor.action.showContextMenu' }
+        const command = { title: 'showContextMenu', command: 'settings.action.showContextMenu' };
+        const codeLens = new vscode_1.CodeLens(range, command);
+        vscode_1.commands.getCommands(true).then((commands) => {
+            console.log(commands.filter(item => item.includes('workbench')));
+            // jumpToNextSnippetPlaceholder
+        });
+        console.log(codeLens);
+        return [codeLens];
+    }
+    resolveCodeLens(codeLens, token) {
+        // console.log(codeLens);
+        return codeLens;
+    }
+}
 function activate(context) {
     let disposable = vscode_1.commands.registerCommand('extension.propTrail', () => {
         vscode_1.window.showInformationMessage('Hello World!');
     });
+    const codeLensProvider = vscode_1.languages.registerCodeLensProvider({ scheme: 'file', language: 'javascriptreact' }, new GoCodeLensProvider());
     vscode_1.languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
         provideHover(document, position, token) {
             const ast = generateAst(document);
@@ -29,7 +48,7 @@ function activate(context) {
             return { contents: ['Prop Trail'] };
         }
     });
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable, codeLensProvider);
 }
 exports.activate = activate;
 const attributeInElement = (element, attribute) => {
@@ -66,6 +85,9 @@ const highlightObjectOccurrences = (document, highlightObject, uri) => {
             const range = new vscode_1.Range(startPosition, endPosition);
             const options = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 };
             vscode_1.window.showTextDocument(document, options).then(editor => {
+                vscode_1.commands.executeCommand('vscode.executeCodeLensProvider', uri).then(ok => {
+                    console.log('something ese');
+                });
             });
         });
     }

@@ -3,6 +3,9 @@ import {
   languages,
   window,
   workspace,
+  CancellationToken,
+  CodeLens,
+  Command,
   ExtensionContext,
   DocumentHighlight,
   Location,
@@ -10,17 +13,42 @@ import {
   Range,
   TextDocument,
   TextDocumentShowOptions,
-  Uri
+  Uri,
+  CodeLensProvider
 } from 'vscode';
 import { parse } from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
+
+class GoCodeLensProvider implements CodeLensProvider {
+  public provideCodeLenses(document: TextDocument, token: CancellationToken):
+    CodeLens[] | Thenable<CodeLens[]> {
+      const range = new Range(0, 0, 0, 10);
+      // const command: Command = { title: 'showContextMenu', command: 'editor.action.showContextMenu' }
+      const command: Command = { title: 'showContextMenu', command: 'settings.action.showContextMenu' }
+      const codeLens = new CodeLens(range, command);
+      commands.getCommands(true).then((commands) => {
+        console.log(commands.filter(item => item.includes('workbench')));
+        // jumpToNextSnippetPlaceholder
+      })
+      console.log(codeLens);
+      return [codeLens]
+  }
+
+  public resolveCodeLens?(codeLens: CodeLens, token: CancellationToken):
+    CodeLens | Thenable<CodeLens> {
+      // console.log(codeLens);
+      return codeLens;
+  }
+}
 
 export function activate(context: ExtensionContext) {
   
 	let disposable = commands.registerCommand('extension.propTrail', () => {
     window.showInformationMessage('Hello World!');
   });
+
+  const codeLensProvider = languages.registerCodeLensProvider({ scheme: 'file', language: 'javascriptreact' }, new GoCodeLensProvider());
 
   languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact'}, {
     provideHover(document, position, token) {
@@ -44,7 +72,7 @@ export function activate(context: ExtensionContext) {
     }
   })
 
-  context.subscriptions.push(disposable)
+  context.subscriptions.push(disposable, codeLensProvider);
 }
 
 const attributeInElement = (element: any, attribute: any) => {
@@ -81,7 +109,10 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObject: any
       const range = new Range(startPosition, endPosition);
       const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
       window.showTextDocument(document, options).then(editor => {
+        commands.executeCommand<CodeLens[]>('vscode.executeCodeLensProvider', uri).then(ok => {
 
+          console.log('something ese')
+        })
       });
     })
   }

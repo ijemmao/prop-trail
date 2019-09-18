@@ -19,7 +19,24 @@
 				"command": "extension.propTrail",
 				"title": "PROP TRAIL"
 			}
-		],
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "propTrailReferences",
+          "title": "Prop Trail References",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "propTrailReferences": [
+        {
+          "id": "propTrailReferences",
+          "name": "Prop Trail References"
+        }
+      ]
+    },
 		"menus": {
 			"editor/context": [
 				{
@@ -27,7 +44,7 @@
 					"group": "navigation",
 					"title": "PROP TRAIL"
 				}
-			]
+      ]
 		},
 		"languages": [
 			{
