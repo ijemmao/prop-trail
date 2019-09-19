@@ -19,7 +19,8 @@ import {
 } from 'babylon';
 import {
   isIdentifier,
-  isJSXOpeningElement
+  isJSXOpeningElement,
+  isJSXAttribute
 } from 'babel-types';
 
 const PLUGINS: PluginName[] = [
