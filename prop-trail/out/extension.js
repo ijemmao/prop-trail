@@ -48,33 +48,44 @@ function activate(context) {
     });
     const propTrail = (document, position) => __awaiter(this, void 0, void 0, function* () {
         const ast = generateAst(document);
+        let classProperties = new Map();
         babel_traverse_1.default(ast, {
             enter(path) {
                 const { uri: target } = document;
                 const range = document.getWordRangeAtPosition(position);
                 const hoverName = document.getText(range);
-                if (babel_types_1.isJSXOpeningElement(path.node)) {
-                    const component = path.node;
-                    const { loc: { start: { line: componentStartLine } } } = path.node;
-                    const attribute = attributeInElement(path.node, hoverName);
-                    if (attribute && componentStartLine <= position.line) {
-                        jumpToComponentDefinition(component, target, hoverName);
+                // if (hoverName === 'getContextValue' && path.node.name === 'value') {
+                // TODO: handle plain objects that are passed into value prop
+                if (babel_types_1.isJSXAttribute(path.node) && babel_types_1.isJSXExpressionContainer(path.node.value)) {
+                    if (babel_types_1.isCallExpression(path.node.value.expression)) {
+                        if (babel_types_1.isMemberExpression(path.node.value.expression.callee)) {
+                            if (babel_types_1.isIdentifier(path.node.value.expression.callee.property)) {
+                                const providerFunctionName = path.node.value.expression.callee.property.name;
+                                let classProperty;
+                                if (classProperty = classProperties.get(providerFunctionName)) {
+                                    if (babel_types_1.isArrowFunctionExpression(classProperty.value) && babel_types_1.isBlockStatement(classProperty.value.body)) {
+                                        classProperty.value.body.body.forEach((item) => {
+                                            if (babel_types_1.isReturnStatement(item) && babel_types_1.isObjectExpression(item.argument)) {
+                                                console.log(item.argument.properties);
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+                // if parent is ClassProperty => arrow functions for a class are class properties
+                if (babel_types_1.isClassProperty(path.node)) {
+                    classProperties.set(path.node.key.name, path.node);
+                }
+                // if (isJSXAttribute(path.node)) jumpToComponentDefinition(path.parent, target, hoverName);
             }
         });
     });
     context.subscriptions.push(disposable, jumpToReference);
 }
 exports.activate = activate;
-const attributeInElement = (element, attribute) => {
-    for (const currentAttribute of element.attributes) {
-        if (currentAttribute.name && currentAttribute.name.name === attribute)
-            return currentAttribute;
-        else if (currentAttribute.argument && currentAttribute.argument.name === attribute)
-            return currentAttribute;
-    }
-};
 const generateAst = (document) => {
     const text = document.getText();
     return babylon_1.parse(text, { sourceType: "module", plugins: PLUGINS });

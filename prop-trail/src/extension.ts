@@ -20,7 +20,18 @@ import {
 import {
   isIdentifier,
   isJSXOpeningElement,
-  isJSXAttribute
+  isJSXAttribute,
+  isJSXExpressionContainer,
+  isMemberExpression,
+  isThisExpression,
+  isClassProperty,
+  isExpression,
+  isCallExpression,
+  ClassProperty,
+  isBlockStatement,
+  isArrowFunctionExpression,
+  isReturnStatement,
+  isObjectExpression
 } from 'babel-types';
 
 const PLUGINS: PluginName[] = [
@@ -46,7 +57,7 @@ export function activate(context: ExtensionContext) {
       propTrail(document, position);
     }
   });
-  
+
   const jumpToReference = commands.registerCommand('propTrail.jumpToReference', reference => {
     const { document, range } = reference;
     const options: TextDocumentShowOptions = {
@@ -58,34 +69,47 @@ export function activate(context: ExtensionContext) {
     window.showTextDocument(document, options);
   });
 
-  const propTrail = async(document: TextDocument, position: Position) => {
+  const propTrail = async (document: TextDocument, position: Position) => {
     const ast = generateAst(document);
-    
+    let classProperties: Map<string, ClassProperty> = new Map();
     traverse(ast, {
       enter(path: NodePath) {
         const { uri: target } = document;
         const range = document.getWordRangeAtPosition(position);
         const hoverName = document.getText(range);
-        if (isJSXOpeningElement(path.node)) {
-          const component = path.node;
-          const { loc: { start: { line: componentStartLine } } } = path.node;
-          const attribute = attributeInElement(path.node, hoverName);
-          if (attribute && componentStartLine <= position.line) {
-            jumpToComponentDefinition(component, target, hoverName);
+        // if (hoverName === 'getContextValue' && path.node.name === 'value') {
+        // TODO: handle plain objects that are passed into value prop
+        if (isJSXAttribute(path.node) && isJSXExpressionContainer(path.node.value)) {
+
+          if (isCallExpression(path.node.value.expression)) {
+            if (isMemberExpression(path.node.value.expression.callee)) {
+              if (isIdentifier(path.node.value.expression.callee.property)) {
+                const providerFunctionName = path.node.value.expression.callee.property.name;
+                let classProperty;
+                if (classProperty = classProperties.get(providerFunctionName)) {
+                  if (isArrowFunctionExpression(classProperty.value) && isBlockStatement(classProperty.value.body)) {
+                    classProperty.value.body.body.forEach((item) => {
+                      if (isReturnStatement(item) && isObjectExpression(item.argument)) {
+                        console.log(item.argument.properties);
+                      }
+                    })
+                  }
+                }
+              }
+            }
           }
-        }
+
       }
-    });
+        // if parent is ClassProperty => arrow functions for a class are class properties
+        if(isClassProperty(path.node)) {
+      classProperties.set(path.node.key.name, path.node);
+    }
+    // if (isJSXAttribute(path.node)) jumpToComponentDefinition(path.parent, target, hoverName);
+  }
+});
   }
 
-  context.subscriptions.push(disposable, jumpToReference);
-}
-
-const attributeInElement = (element: any, attribute: any) => {
-  for (const currentAttribute of element.attributes) {
-    if (currentAttribute.name && currentAttribute.name.name === attribute) return currentAttribute;
-    else if (currentAttribute.argument && currentAttribute.argument.name === attribute) return currentAttribute;
-  }
+context.subscriptions.push(disposable, jumpToReference);
 }
 
 const generateAst = (document: TextDocument) => {
