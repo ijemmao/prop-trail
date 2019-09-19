@@ -6,6 +6,17 @@ const babel_traverse_1 = require("babel-traverse");
 const t = require("babel-types");
 const references_1 = require("./references");
 const TestView_1 = require("./TestView");
+const PLUGINS = [
+    'jsx',
+    'flow',
+    'classConstructorCall',
+    'doExpressions',
+    'objectRestSpread',
+    'decorators',
+    'classProperties',
+    'exportExtensions',
+    'asyncGenerators'
+];
 class GoCodeLensProvider {
     provideCodeLenses(document, token) {
         const range = new vscode_1.Range(0, 0, 0, 10);
@@ -16,7 +27,7 @@ class GoCodeLensProvider {
         //   console.log(commands.filter(item => item.includes('workbench')));
         //   // jumpToNextSnippetPlaceholder
         // })
-        console.log(codeLens);
+        // console.log(codeLens);
         return [codeLens];
     }
     resolveCodeLens(codeLens, token) {
@@ -66,19 +77,7 @@ const attributeInElement = (element, attribute) => {
 };
 const generateAst = (document) => {
     const text = document.getText();
-    return babylon_1.parse(text, {
-        sourceType: "module", plugins: [
-            'jsx',
-            'flow',
-            'classConstructorCall',
-            'doExpressions',
-            'objectRestSpread',
-            'decorators',
-            'classProperties',
-            'exportExtensions',
-            'asyncGenerators'
-        ]
-    });
+    return babylon_1.parse(text, { sourceType: "module", plugins: PLUGINS });
 };
 const highlightObjectOccurrences = (document, highlightObject, uri) => {
     if (highlightObject) {
@@ -91,8 +90,8 @@ const highlightObjectOccurrences = (document, highlightObject, uri) => {
             const range = new vscode_1.Range(startPosition, endPosition);
             const options = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 };
             vscode_1.window.showTextDocument(document, options).then(editor => {
-                vscode_1.commands.executeCommand('vscode.executeCodeLensProvider', uri).then(ok => {
-                    // console.log('something ese')
+                vscode_1.commands.executeCommand('vscode.executeCodeLensProvider', uri).then(codeLens => {
+                    // console.log('Code Lens Provider')
                 });
             });
         });

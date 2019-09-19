@@ -31,3 +31,6 @@ So this plugin has lead to me where I am right now.
 ### Bug Sheet
 * **Fixed** Whenever an unrelated variable has the same name as a prop, the extension will jump to component definition
   * Check to see if hovered element is inside component (`loc` comparison?)
+* Multiple Depth Lookup - create a tree of components to follow the path of a single prop
+  * For example if a prop gets masked with `{...this.props}`
+* Right click on prop to trigger Tree View instead of hovering

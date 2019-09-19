@@ -16,12 +16,24 @@ import {
   Uri,
   CodeLensProvider
 } from 'vscode';
-import { parse } from 'babylon';
+import { parse, PluginName } from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
 import { DepNodeProvider } from './nodeDependencies';
 import { ReferenceProvider } from './references';
 import { TestView } from './TestView';
+
+const PLUGINS: PluginName[] = [
+  'jsx',
+  'flow',
+  'classConstructorCall',
+  'doExpressions',
+  'objectRestSpread',
+  'decorators',
+  'classProperties',
+  'exportExtensions',
+  'asyncGenerators'
+];
 
 class GoCodeLensProvider implements CodeLensProvider {
   public provideCodeLenses(document: TextDocument, token: CancellationToken):
@@ -34,7 +46,7 @@ class GoCodeLensProvider implements CodeLensProvider {
       //   console.log(commands.filter(item => item.includes('workbench')));
       //   // jumpToNextSnippetPlaceholder
       // })
-      console.log(codeLens);
+      // console.log(codeLens);
       return [codeLens]
   }
 
@@ -93,18 +105,7 @@ const attributeInElement = (element: any, attribute: any) => {
 
 const generateAst = (document: TextDocument) => {
   const text = document.getText();
-  return parse(text, {
-    sourceType: "module", plugins: [
-      'jsx',
-      'flow',
-      'classConstructorCall',
-      'doExpressions',
-      'objectRestSpread',
-      'decorators',
-      'classProperties',
-      'exportExtensions',
-      'asyncGenerators']
-  });
+  return parse(text, { sourceType: "module", plugins: PLUGINS });
 }
 
 const highlightObjectOccurrences = (document: TextDocument, highlightObject: any, uri: Uri) => {
@@ -118,9 +119,9 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObject: any
       const range = new Range(startPosition, endPosition);
       const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
       window.showTextDocument(document, options).then(editor => {
-        commands.executeCommand<CodeLens[]>('vscode.executeCodeLensProvider', uri).then(ok => {
+        commands.executeCommand<CodeLens[]>('vscode.executeCodeLensProvider', uri).then(codeLens => {
 
-          // console.log('something ese')
+          // console.log('Code Lens Provider')
         })
       });
     })
