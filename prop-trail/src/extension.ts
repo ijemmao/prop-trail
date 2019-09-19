@@ -1,6 +1,7 @@
+import traverse from 'babel-traverse';
+import { ReferenceProvider } from './references';
 import {
   commands,
-  languages,
   window,
   workspace,
   ExtensionContext,
@@ -10,11 +11,16 @@ import {
   TextDocument,
   TextDocumentShowOptions,
   Uri,
+  TextEditor,
 } from 'vscode';
-import { parse, PluginName } from 'babylon';
-import traverse from 'babel-traverse';
-import * as t from 'babel-types';
-import { ReferenceProvider } from './references';
+import {
+  parse,
+  PluginName
+} from 'babylon';
+import {
+  isIdentifier,
+  isJSXOpeningElement
+} from 'babel-types';
 
 const PLUGINS: PluginName[] = [
   'jsx',
@@ -30,36 +36,43 @@ const PLUGINS: PluginName[] = [
 
 export function activate(context: ExtensionContext) {
 
-  let disposable = commands.registerCommand('extension.propTrail', () => {
+  let disposable = commands.registerCommand('extension.propTrail', (args) => {
     window.showInformationMessage('Hello World!');
+    const editor: TextEditor | undefined = window.activeTextEditor;
+    if (editor) {
+      const { document } = editor;
+      const { start: { line, character } } = editor.selection;
+      const position = new Position(line, character);
+      propTrail(document, position);
+    }
   });
   
-  const jumpToReference = commands.registerCommand('propTrail.jumpToReference', reference => {    const { document, range } = reference;
+  const jumpToReference = commands.registerCommand('propTrail.jumpToReference', reference => {
+    const { document, range } = reference;
     const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
     window.showTextDocument(document, options).then(editor => {});
   });
 
-  languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
-    provideHover(document, position, token) {
-      const ast = generateAst(document);
-      traverse(ast, {
-        enter(path: any) {
-          const { uri: target } = document;
-          const range = document.getWordRangeAtPosition(position);
-          const hoverName = document.getText(range);
-          if (t.isJSXOpeningElement(path.node)) {
-            const component = path.node;
-            const { loc: { start: { line: componentStartLine } } } = path.node;
-            const attribute = attributeInElement(path.node, hoverName);
-            if (attribute && componentStartLine <= position.line) {
-              jumpToComponentDefinition(component, target, hoverName);
-            }
+  const propTrail = (document: TextDocument, position: Position) => {
+    const ast = generateAst(document);
+    traverse(ast, {
+      enter(path: any) {
+        const { uri: target } = document;
+        const range = document.getWordRangeAtPosition(position);
+        const hoverName = document.getText(range);
+        if (isJSXOpeningElement(path.node)) {
+          const component = path.node;
+          const { loc: { start: { line: componentStartLine } } } = path.node;
+          const attribute = attributeInElement(path.node, hoverName);
+          if (attribute && componentStartLine <= position.line) {
+            jumpToComponentDefinition(component, target, hoverName);
           }
         }
-      });
-      return { contents: ['Prop Trail'] }
-    }
-  })
+      }
+    });
+
+    return { contents: ['Prop Trail'] }
+  }
 
   context.subscriptions.push(disposable, jumpToReference);
 }
@@ -111,7 +124,7 @@ const jumpToComponentDefinition = (component: any, target: Uri, hoverName: strin
         let highlightObjects: any[] = [];
         traverse(ast, {
           enter(path: any) {
-            if (t.isIdentifier(path.node) && path.node.name === hoverName) {
+            if (isIdentifier(path.node) && path.node.name === hoverName) {
               // Each path.node has different highlight instances attached to it
               highlightObjects.push(path.node);
             }

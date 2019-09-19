@@ -1,5 +1,4 @@
 import {
-  window,
   Command,
   Event,
   EventEmitter,
@@ -10,7 +9,6 @@ import {
   DocumentHighlight,
   Range,
   Position,
-  TextDocumentShowOptions
 } from 'vscode';
 
 export class ReferenceProvider implements TreeDataProvider<Reference> {
@@ -64,4 +62,6 @@ class Reference extends TreeItem {
   ) {
     super(label);
   }
+
+  tooltip = this.label.trim();
 }

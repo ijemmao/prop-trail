@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const babel_traverse_1 = require("babel-traverse");
+const references_1 = require("./references");
 const vscode_1 = require("vscode");
 const babylon_1 = require("babylon");
-const babel_traverse_1 = require("babel-traverse");
-const t = require("babel-types");
-const references_1 = require("./references");
+const babel_types_1 = require("babel-types");
 const PLUGINS = [
     'jsx',
     'flow',
@@ -17,35 +17,40 @@ const PLUGINS = [
     'asyncGenerators'
 ];
 function activate(context) {
-    let disposable = vscode_1.commands.registerCommand('extension.propTrail', () => {
+    let disposable = vscode_1.commands.registerCommand('extension.propTrail', (args) => {
         vscode_1.window.showInformationMessage('Hello World!');
+        const editor = vscode_1.window.activeTextEditor;
+        if (editor) {
+            const { document } = editor;
+            const { start: { line, character } } = editor.selection;
+            const position = new vscode_1.Position(line, character);
+            propTrail(document, position);
+        }
     });
     const jumpToReference = vscode_1.commands.registerCommand('propTrail.jumpToReference', reference => {
         const { document, range } = reference;
         const options = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 };
         vscode_1.window.showTextDocument(document, options).then(editor => { });
     });
-    vscode_1.languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
-        provideHover(document, position, token) {
-            const ast = generateAst(document);
-            babel_traverse_1.default(ast, {
-                enter(path) {
-                    const { uri: target } = document;
-                    const range = document.getWordRangeAtPosition(position);
-                    const hoverName = document.getText(range);
-                    if (t.isJSXOpeningElement(path.node)) {
-                        const component = path.node;
-                        const { loc: { start: { line: componentStartLine } } } = path.node;
-                        const attribute = attributeInElement(path.node, hoverName);
-                        if (attribute && componentStartLine <= position.line) {
-                            jumpToComponentDefinition(component, target, hoverName);
-                        }
+    const propTrail = (document, position) => {
+        const ast = generateAst(document);
+        babel_traverse_1.default(ast, {
+            enter(path) {
+                const { uri: target } = document;
+                const range = document.getWordRangeAtPosition(position);
+                const hoverName = document.getText(range);
+                if (babel_types_1.isJSXOpeningElement(path.node)) {
+                    const component = path.node;
+                    const { loc: { start: { line: componentStartLine } } } = path.node;
+                    const attribute = attributeInElement(path.node, hoverName);
+                    if (attribute && componentStartLine <= position.line) {
+                        jumpToComponentDefinition(component, target, hoverName);
                     }
                 }
-            });
-            return { contents: ['Prop Trail'] };
-        }
-    });
+            }
+        });
+        return { contents: ['Prop Trail'] };
+    };
     context.subscriptions.push(disposable, jumpToReference);
 }
 exports.activate = activate;
@@ -94,7 +99,7 @@ const jumpToComponentDefinition = (component, target, hoverName) => {
                 let highlightObjects = [];
                 babel_traverse_1.default(ast, {
                     enter(path) {
-                        if (t.isIdentifier(path.node) && path.node.name === hoverName) {
+                        if (babel_types_1.isIdentifier(path.node) && path.node.name === hoverName) {
                             // Each path.node has different highlight instances attached to it
                             highlightObjects.push(path.node);
                         }

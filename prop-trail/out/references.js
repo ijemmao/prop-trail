@@ -48,6 +48,7 @@ class Reference extends vscode_1.TreeItem {
         this.wordRange = wordRange;
         this.command = command;
         this.contextValue = contextValue;
+        this.tooltip = this.label.trim();
     }
 }
 //# sourceMappingURL=references.js.map
