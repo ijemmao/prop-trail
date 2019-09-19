@@ -1,15 +1,9 @@
 import * as vscode from 'vscode';
+import { ReferenceProvider } from './references';
 
 export class TestView {
-
-  constructor(context: vscode.ExtensionContext) {
-    const view = vscode.window.createTreeView('propTrailReferences', { treeDataProvider: aNodeWithIdTreeDataProvider(), showCollapseAll: true });
-    vscode.commands.registerCommand('propTrailReferences.reveal', async () => {
-      const key = await vscode.window.showInputBox({ placeHolder: 'Type the label of the item to reveal' });
-      if (key) {
-        await view.reveal({ key }, { focus: true, select: false, expand: true });
-      }
-    });
+  constructor(references: vscode.DocumentHighlight[], document: vscode.TextDocument) {
+    const view = vscode.window.createTreeView('propTrailReferences', { treeDataProvider: new ReferenceProvider(references, document), showCollapseAll: true });
   }
 }
 

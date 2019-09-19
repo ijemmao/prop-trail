@@ -20,6 +20,7 @@ import { parse } from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
 import { DepNodeProvider } from './nodeDependencies';
+import { ReferenceProvider } from './references';
 import { TestView } from './TestView';
 
 class GoCodeLensProvider implements CodeLensProvider {
@@ -29,10 +30,10 @@ class GoCodeLensProvider implements CodeLensProvider {
       // const command: Command = { title: 'showContextMenu', command: 'editor.action.showContextMenu' }
       const command: Command = { title: 'showContextMenu', command: 'settings.action.showContextMenu' }
       const codeLens = new CodeLens(range, command);
-      commands.getCommands(true).then((commands) => {
-        console.log(commands.filter(item => item.includes('workbench')));
-        // jumpToNextSnippetPlaceholder
-      })
+      // commands.getCommands(true).then((commands) => {
+      //   console.log(commands.filter(item => item.includes('workbench')));
+      //   // jumpToNextSnippetPlaceholder
+      // })
       console.log(codeLens);
       return [codeLens]
   }
@@ -50,7 +51,11 @@ export function activate(context: ExtensionContext) {
     window.showInformationMessage('Hello World!');
   });
 
-  window.registerTreeDataProvider('propTrailReferences', new DepNodeProvider(workspace.rootPath || ''));
+  const editEntry = commands.registerCommand('propTrail.editEntry', () => {
+
+  })
+
+  window.registerTreeDataProvider('propTrailReferences', new ReferenceProvider(workspace.rootPath || ''));
 
   const codeLensProvider = languages.registerCodeLensProvider({ scheme: 'file', language: 'javascriptreact' }, new GoCodeLensProvider());
 
@@ -76,9 +81,7 @@ export function activate(context: ExtensionContext) {
     }
   })
 
-  context.subscriptions.push(disposable, codeLensProvider);
-
-  new TestView(context);
+  context.subscriptions.push(disposable, codeLensProvider, editEntry);
 }
 
 const attributeInElement = (element: any, attribute: any) => {
@@ -111,13 +114,13 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObject: any
     const startPosition = new Position(startLine - 1, startColumn);
     const endPosition = new Position(endLine - 1, endColumn);
     commands.executeCommand<DocumentHighlight[]>('vscode.executeDocumentHighlights', uri, startPosition).then(highlights => {
-
+      new TestView(highlights || [], document);
       const range = new Range(startPosition, endPosition);
       const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
       window.showTextDocument(document, options).then(editor => {
         commands.executeCommand<CodeLens[]>('vscode.executeCodeLensProvider', uri).then(ok => {
 
-          console.log('something ese')
+          // console.log('something ese')
         })
       });
     })

@@ -4,7 +4,7 @@ const vscode_1 = require("vscode");
 const babylon_1 = require("babylon");
 const babel_traverse_1 = require("babel-traverse");
 const t = require("babel-types");
-const nodeDependencies_1 = require("./nodeDependencies");
+const references_1 = require("./references");
 const TestView_1 = require("./TestView");
 class GoCodeLensProvider {
     provideCodeLenses(document, token) {
@@ -12,10 +12,10 @@ class GoCodeLensProvider {
         // const command: Command = { title: 'showContextMenu', command: 'editor.action.showContextMenu' }
         const command = { title: 'showContextMenu', command: 'settings.action.showContextMenu' };
         const codeLens = new vscode_1.CodeLens(range, command);
-        vscode_1.commands.getCommands(true).then((commands) => {
-            console.log(commands.filter(item => item.includes('workbench')));
-            // jumpToNextSnippetPlaceholder
-        });
+        // commands.getCommands(true).then((commands) => {
+        //   console.log(commands.filter(item => item.includes('workbench')));
+        //   // jumpToNextSnippetPlaceholder
+        // })
         console.log(codeLens);
         return [codeLens];
     }
@@ -28,7 +28,9 @@ function activate(context) {
     let disposable = vscode_1.commands.registerCommand('extension.propTrail', () => {
         vscode_1.window.showInformationMessage('Hello World!');
     });
-    vscode_1.window.registerTreeDataProvider('propTrailReferences', new nodeDependencies_1.DepNodeProvider(vscode_1.workspace.rootPath || ''));
+    const editEntry = vscode_1.commands.registerCommand('propTrail.editEntry', () => {
+    });
+    vscode_1.window.registerTreeDataProvider('propTrailReferences', new references_1.ReferenceProvider(vscode_1.workspace.rootPath || ''));
     const codeLensProvider = vscode_1.languages.registerCodeLensProvider({ scheme: 'file', language: 'javascriptreact' }, new GoCodeLensProvider());
     vscode_1.languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
         provideHover(document, position, token) {
@@ -51,8 +53,7 @@ function activate(context) {
             return { contents: ['Prop Trail'] };
         }
     });
-    context.subscriptions.push(disposable, codeLensProvider);
-    new TestView_1.TestView(context);
+    context.subscriptions.push(disposable, codeLensProvider, editEntry);
 }
 exports.activate = activate;
 const attributeInElement = (element, attribute) => {
@@ -86,11 +87,12 @@ const highlightObjectOccurrences = (document, highlightObject, uri) => {
         const startPosition = new vscode_1.Position(startLine - 1, startColumn);
         const endPosition = new vscode_1.Position(endLine - 1, endColumn);
         vscode_1.commands.executeCommand('vscode.executeDocumentHighlights', uri, startPosition).then(highlights => {
+            new TestView_1.TestView(highlights || [], document);
             const range = new vscode_1.Range(startPosition, endPosition);
             const options = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 };
             vscode_1.window.showTextDocument(document, options).then(editor => {
                 vscode_1.commands.executeCommand('vscode.executeCodeLensProvider', uri).then(ok => {
-                    console.log('something ese');
+                    // console.log('something ese')
                 });
             });
         });
