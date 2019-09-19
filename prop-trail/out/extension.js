@@ -21,7 +21,7 @@ function activate(context) {
         vscode_1.window.showInformationMessage('Hello World!');
     });
     const jumpToReference = vscode_1.commands.registerCommand('propTrail.jumpToReference', reference => {
-        const { document, uri, wordRange: range } = reference;
+        const { document, range } = reference;
         const options = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 };
         vscode_1.window.showTextDocument(document, options).then(editor => { });
     });
@@ -70,7 +70,7 @@ const highlightObjectOccurrences = (document, highlightObjects, uri) => {
             const endPosition = new vscode_1.Position(endLine - 1, endColumn);
             return vscode_1.commands.executeCommand('vscode.executeDocumentHighlights', uri, startPosition).then(highlight => ({ highlight, meta: [highlightObject] }));
         });
-        Promise.all(highlightPromises).then(highlights => {
+        Promise.all(highlightPromises).then((highlights) => {
             highlights = highlights.map(({ highlight, meta }) => {
                 if (highlight) {
                     return highlight;

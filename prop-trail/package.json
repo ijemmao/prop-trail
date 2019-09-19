@@ -53,8 +53,7 @@
       "view/item/context": [
         {
           "command": "propTrail.jumpToReference",
-          "when": "view == propTrailReferences",
-          "group": "inline"
+          "when": "view == propTrailReferences"
         }
       ]
 		},

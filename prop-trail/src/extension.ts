@@ -34,8 +34,7 @@ export function activate(context: ExtensionContext) {
     window.showInformationMessage('Hello World!');
   });
   
-  const jumpToReference = commands.registerCommand('propTrail.jumpToReference', reference => {
-    const { document, uri, wordRange: range } = reference;
+  const jumpToReference = commands.registerCommand('propTrail.jumpToReference', reference => {    const { document, range } = reference;
     const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
     window.showTextDocument(document, options).then(editor => {});
   });
@@ -87,8 +86,8 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObjects: an
       return commands.executeCommand<DocumentHighlight[]>('vscode.executeDocumentHighlights', uri, startPosition).then(highlight => ({ highlight, meta: [highlightObject] }));
     })
 
-    Promise.all(highlightPromises).then(highlights => {
-      highlights = highlights.map(({ highlight, meta }) => {
+    Promise.all(highlightPromises).then((highlights: any) => {
+      highlights = highlights.map(({ highlight, meta }: any) => {
         if (highlight) {
           return highlight;
         } return meta
