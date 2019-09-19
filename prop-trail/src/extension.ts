@@ -1,4 +1,4 @@
-import traverse from 'babel-traverse';
+import traverse, { NodePath } from 'babel-traverse';
 import { ReferenceProvider } from './references';
 import {
   commands,
@@ -34,10 +34,9 @@ const PLUGINS: PluginName[] = [
   'asyncGenerators'
 ];
 
+let numOfRefs = 0;
 export function activate(context: ExtensionContext) {
-
   let disposable = commands.registerCommand('extension.propTrail', (args) => {
-    window.showInformationMessage('Hello World!');
     const editor: TextEditor | undefined = window.activeTextEditor;
     if (editor) {
       const { document } = editor;
@@ -49,14 +48,20 @@ export function activate(context: ExtensionContext) {
   
   const jumpToReference = commands.registerCommand('propTrail.jumpToReference', reference => {
     const { document, range } = reference;
-    const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
-    window.showTextDocument(document, options).then(editor => {});
+    const options: TextDocumentShowOptions = {
+      preserveFocus: true,
+      preview: true,
+      selection: range,
+      viewColumn: 2
+    };
+    window.showTextDocument(document, options);
   });
 
-  const propTrail = (document: TextDocument, position: Position) => {
+  const propTrail = async(document: TextDocument, position: Position) => {
     const ast = generateAst(document);
+    
     traverse(ast, {
-      enter(path: any) {
+      enter(path: NodePath) {
         const { uri: target } = document;
         const range = document.getWordRangeAtPosition(position);
         const hoverName = document.getText(range);
@@ -70,8 +75,6 @@ export function activate(context: ExtensionContext) {
         }
       }
     });
-
-    return { contents: ['Prop Trail'] }
   }
 
   context.subscriptions.push(disposable, jumpToReference);
@@ -95,7 +98,6 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObjects: an
       const { line: startLine, column: startColumn } = highlightObject.loc.start;
       const { line: endLine, column: endColumn } = highlightObject.loc.end;
       const startPosition = new Position(startLine - 1, startColumn);
-      const endPosition = new Position(endLine - 1, endColumn);
       return commands.executeCommand<DocumentHighlight[]>('vscode.executeDocumentHighlights', uri, startPosition).then(highlight => ({ highlight, meta: [highlightObject] }));
     })
 
@@ -137,7 +139,10 @@ const jumpToComponentDefinition = (component: any, target: Uri, hoverName: strin
 }
 
 const udpateTreeView = (references: DocumentHighlight[], document: TextDocument) => {
-  window.createTreeView('propTrailReferences', { treeDataProvider: new ReferenceProvider(references, document), showCollapseAll: true });
+  window.createTreeView('propTrailReferences', {
+    treeDataProvider: new ReferenceProvider(references, document),
+    showCollapseAll: true
+  });
 }
 
 export function deactivate() { }

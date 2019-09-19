@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const babel_traverse_1 = require("babel-traverse");
 const references_1 = require("./references");
@@ -16,9 +25,9 @@ const PLUGINS = [
     'exportExtensions',
     'asyncGenerators'
 ];
+let numOfRefs = 0;
 function activate(context) {
     let disposable = vscode_1.commands.registerCommand('extension.propTrail', (args) => {
-        vscode_1.window.showInformationMessage('Hello World!');
         const editor = vscode_1.window.activeTextEditor;
         if (editor) {
             const { document } = editor;
@@ -29,10 +38,15 @@ function activate(context) {
     });
     const jumpToReference = vscode_1.commands.registerCommand('propTrail.jumpToReference', reference => {
         const { document, range } = reference;
-        const options = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 };
-        vscode_1.window.showTextDocument(document, options).then(editor => { });
+        const options = {
+            preserveFocus: true,
+            preview: true,
+            selection: range,
+            viewColumn: 2
+        };
+        vscode_1.window.showTextDocument(document, options);
     });
-    const propTrail = (document, position) => {
+    const propTrail = (document, position) => __awaiter(this, void 0, void 0, function* () {
         const ast = generateAst(document);
         babel_traverse_1.default(ast, {
             enter(path) {
@@ -49,8 +63,7 @@ function activate(context) {
                 }
             }
         });
-        return { contents: ['Prop Trail'] };
-    };
+    });
     context.subscriptions.push(disposable, jumpToReference);
 }
 exports.activate = activate;
@@ -72,7 +85,6 @@ const highlightObjectOccurrences = (document, highlightObjects, uri) => {
             const { line: startLine, column: startColumn } = highlightObject.loc.start;
             const { line: endLine, column: endColumn } = highlightObject.loc.end;
             const startPosition = new vscode_1.Position(startLine - 1, startColumn);
-            const endPosition = new vscode_1.Position(endLine - 1, endColumn);
             return vscode_1.commands.executeCommand('vscode.executeDocumentHighlights', uri, startPosition).then(highlight => ({ highlight, meta: [highlightObject] }));
         });
         Promise.all(highlightPromises).then((highlights) => {
@@ -111,7 +123,10 @@ const jumpToComponentDefinition = (component, target, hoverName) => {
     });
 };
 const udpateTreeView = (references, document) => {
-    vscode_1.window.createTreeView('propTrailReferences', { treeDataProvider: new references_1.ReferenceProvider(references, document), showCollapseAll: true });
+    vscode_1.window.createTreeView('propTrailReferences', {
+        treeDataProvider: new references_1.ReferenceProvider(references, document),
+        showCollapseAll: true
+    });
 };
 function deactivate() { }
 exports.deactivate = deactivate;
