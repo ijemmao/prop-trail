@@ -20,7 +20,7 @@
 				"title": "PROP TRAIL"
       },
       {
-        "command": "propTrail.editEntry",
+        "command": "propTrail.jumpToReference",
         "title": "Edit Entry",
         "icon": "resources/edit.svg"
       }
@@ -52,7 +52,7 @@
       ],
       "view/item/context": [
         {
-          "command": "propTrail.editEntry",
+          "command": "propTrail.jumpToReference",
           "when": "view == propTrailReferences",
           "group": "inline"
         }

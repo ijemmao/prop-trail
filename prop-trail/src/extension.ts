@@ -3,25 +3,18 @@ import {
   languages,
   window,
   workspace,
-  CancellationToken,
-  CodeLens,
-  Command,
   ExtensionContext,
   DocumentHighlight,
   Location,
   Position,
-  Range,
   TextDocument,
   TextDocumentShowOptions,
   Uri,
-  CodeLensProvider
 } from 'vscode';
 import { parse, PluginName } from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
-import { DepNodeProvider } from './nodeDependencies';
 import { ReferenceProvider } from './references';
-import { TestView } from './TestView';
 
 const PLUGINS: PluginName[] = [
   'jsx',
@@ -35,43 +28,19 @@ const PLUGINS: PluginName[] = [
   'asyncGenerators'
 ];
 
-class GoCodeLensProvider implements CodeLensProvider {
-  public provideCodeLenses(document: TextDocument, token: CancellationToken):
-    CodeLens[] | Thenable<CodeLens[]> {
-      const range = new Range(0, 0, 0, 10);
-      // const command: Command = { title: 'showContextMenu', command: 'editor.action.showContextMenu' }
-      const command: Command = { title: 'showContextMenu', command: 'settings.action.showContextMenu' }
-      const codeLens = new CodeLens(range, command);
-      // commands.getCommands(true).then((commands) => {
-      //   console.log(commands.filter(item => item.includes('workbench')));
-      //   // jumpToNextSnippetPlaceholder
-      // })
-      // console.log(codeLens);
-      return [codeLens]
-  }
-
-  public resolveCodeLens?(codeLens: CodeLens, token: CancellationToken):
-    CodeLens | Thenable<CodeLens> {
-      // console.log(codeLens);
-      return codeLens;
-  }
-}
-
 export function activate(context: ExtensionContext) {
-  
-	let disposable = commands.registerCommand('extension.propTrail', () => {
+
+  let disposable = commands.registerCommand('extension.propTrail', () => {
     window.showInformationMessage('Hello World!');
   });
+  
+  const jumpToReference = commands.registerCommand('propTrail.jumpToReference', reference => {
+    const { document, uri, wordRange: range } = reference;
+    const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
+    window.showTextDocument(document, options).then(editor => {});
+  });
 
-  const editEntry = commands.registerCommand('propTrail.editEntry', () => {
-
-  })
-
-  window.registerTreeDataProvider('propTrailReferences', new ReferenceProvider(workspace.rootPath || ''));
-
-  const codeLensProvider = languages.registerCodeLensProvider({ scheme: 'file', language: 'javascriptreact' }, new GoCodeLensProvider());
-
-  languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact'}, {
+  languages.registerHoverProvider({ scheme: 'file', language: 'javascriptreact' }, {
     provideHover(document, position, token) {
       const ast = generateAst(document);
       traverse(ast, {
@@ -93,7 +62,7 @@ export function activate(context: ExtensionContext) {
     }
   })
 
-  context.subscriptions.push(disposable, codeLensProvider, editEntry);
+  context.subscriptions.push(disposable, jumpToReference);
 }
 
 const attributeInElement = (element: any, attribute: any) => {
@@ -108,22 +77,23 @@ const generateAst = (document: TextDocument) => {
   return parse(text, { sourceType: "module", plugins: PLUGINS });
 }
 
-const highlightObjectOccurrences = (document: TextDocument, highlightObject: any, uri: Uri) => {
-  if (highlightObject) {
-    const { line: startLine, column: startColumn } = highlightObject.loc.start;
-    const { line: endLine, column: endColumn } = highlightObject.loc.end;
-    const startPosition = new Position(startLine - 1, startColumn);
-    const endPosition = new Position(endLine - 1, endColumn);
-    commands.executeCommand<DocumentHighlight[]>('vscode.executeDocumentHighlights', uri, startPosition).then(highlights => {
-      new TestView(highlights || [], document);
-      const range = new Range(startPosition, endPosition);
-      const options: TextDocumentShowOptions = { preserveFocus: true, preview: true, selection: range, viewColumn: 2 }
-      window.showTextDocument(document, options).then(editor => {
-        commands.executeCommand<CodeLens[]>('vscode.executeCodeLensProvider', uri).then(codeLens => {
+const highlightObjectOccurrences = (document: TextDocument, highlightObjects: any[], uri: Uri) => {
+  if (highlightObjects.length) {
+    const highlightPromises = highlightObjects.map((highlightObject) => {
+      const { line: startLine, column: startColumn } = highlightObject.loc.start;
+      const { line: endLine, column: endColumn } = highlightObject.loc.end;
+      const startPosition = new Position(startLine - 1, startColumn);
+      const endPosition = new Position(endLine - 1, endColumn);
+      return commands.executeCommand<DocumentHighlight[]>('vscode.executeDocumentHighlights', uri, startPosition).then(highlight => ({ highlight, meta: [highlightObject] }));
+    })
 
-          // console.log('Code Lens Provider')
-        })
+    Promise.all(highlightPromises).then(highlights => {
+      highlights = highlights.map(({ highlight, meta }) => {
+        if (highlight) {
+          return highlight;
+        } return meta
       });
+      udpateTreeView(highlights, document);
     })
   }
 }
@@ -139,18 +109,23 @@ const jumpToComponentDefinition = (component: any, target: Uri, hoverName: strin
       const uri = Uri.file(reference.uri.path);
       workspace.openTextDocument(uri).then(document => {
         const ast = generateAst(document);
-        let highlightObject: any;
+        let highlightObjects: any[] = [];
         traverse(ast, {
           enter(path: any) {
             if (t.isIdentifier(path.node) && path.node.name === hoverName) {
-              highlightObject = path.node;
+              // Each path.node has different highlight instances attached to it
+              highlightObjects.push(path.node);
             }
           }
         });
-        highlightObjectOccurrences(document, highlightObject, uri);
+        highlightObjectOccurrences(document, highlightObjects, uri);
       })
     }
   })
 }
 
-export function deactivate() {}
+const udpateTreeView = (references: DocumentHighlight[], document: TextDocument) => {
+  window.createTreeView('propTrailReferences', { treeDataProvider: new ReferenceProvider(references, document), showCollapseAll: true });
+}
+
+export function deactivate() { }
