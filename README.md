@@ -4,13 +4,11 @@ Prop Trail is a small but powerful VSCode extension that allows developers to se
 
 ## Features
 
-* Right click on the desired prop, click on the 'PROP TRAIL' menu option, and click on the Navigation Icon in the Activity Bar to see all the prop's references in the React component.s
+* Right-click on the desired prop
+* Click on the `PROP TRAIL` menu option
+* Navigate to the Prop Trail icon in the Activity bar to see all prop references
 
 ![Demo](./demo.gif)
-
-## Known Issues
-
-Currently, this extension only goes into a component at a time. So it doesn't track the path of a prop that has been passed down into multiple components. 
 
 ## Release Notes
 
@@ -22,7 +20,7 @@ Initial release of prop-trials.
 
 * Change the display name from `prop-trail` to `Prop Trail`.
 
-### 1.0.4
+### 1.0.8
 
 * Update information in README.
 * Refactor codebase to remove `v1` directory.

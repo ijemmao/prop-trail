@@ -7,7 +7,7 @@
   },
   "displayName": "Prop Trail",
   "description": "Tracks all references of props within React components",
-  "version": "1.0.4",
+  "version": "1.0.8",
   "engines": {
     "vscode": "^1.38.0"
   },
@@ -26,8 +26,7 @@
       },
       {
         "command": "propTrail.jumpToReference",
-        "title": "Edit Entry",
-        "icon": "resources/edit.svg"
+        "title": "Edit Entry"
       }
     ],
     "viewsContainers": {
