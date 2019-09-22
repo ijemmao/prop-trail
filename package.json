@@ -7,7 +7,7 @@
   },
   "displayName": "Prop Trail",
   "description": "Tracks all references of props within React components",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "engines": {
     "vscode": "^1.38.0"
   },
