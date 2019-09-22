@@ -6,7 +6,7 @@
     "url": "https://github.com/ijemmao/prop-trail"
   },
   "displayName": "Prop Trail",
-  "description": "track props in react components",
+  "description": "Tracks all references of props within React components",
   "version": "1.0.3",
   "engines": {
     "vscode": "^1.38.0"
