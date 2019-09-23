@@ -4,7 +4,7 @@ Prop Trail is a small but powerful VSCode extension that allows developers to se
 
 ## Features
 
-* Right-click on the desired prop
+* Right-click on the desired prop assigned to a component
 * Click on the `PROP TRAIL` menu option
 * Navigate to the Prop Trail icon in the Activity bar to see all prop references
 
