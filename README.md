@@ -20,7 +20,7 @@ Initial release of prop-trials.
 
 * Change the display name from `prop-trail` to `Prop Trail`.
 
-### 1.0.8
+### 1.0.9
 
 * Update information in README.
 * Refactor codebase to remove `v1` directory.

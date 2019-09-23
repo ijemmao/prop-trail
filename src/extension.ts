@@ -110,7 +110,7 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObjects: Id
           const { loc: { end:
             { line: endLine, column: endCharacter },
             start: { line: startLine, column: startCharacter }
-          } } = meta;
+          } } = meta[0] || meta;
 
           const range = new Range(new Position(startLine, startCharacter), new Position(endLine, endCharacter));
           return new DocumentHighlight(range);

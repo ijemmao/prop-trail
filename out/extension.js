@@ -89,7 +89,7 @@ const highlightObjectOccurrences = (document, highlightObjects) => {
                 if (highlight) {
                     return highlight;
                 }
-                const { loc: { end: { line: endLine, column: endCharacter }, start: { line: startLine, column: startCharacter } } } = meta;
+                const { loc: { end: { line: endLine, column: endCharacter }, start: { line: startLine, column: startCharacter } } } = meta[0] || meta;
                 const range = new vscode_1.Range(new vscode_1.Position(startLine, startCharacter), new vscode_1.Position(endLine, endCharacter));
                 return new vscode_1.DocumentHighlight(range);
             })
