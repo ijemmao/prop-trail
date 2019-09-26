@@ -16,29 +16,35 @@ export class ReferenceProvider implements TreeDataProvider<Reference> {
   private _onDidChangeTreeData: EventEmitter<Reference | undefined> = new EventEmitter<Reference | undefined>();
   readonly onDidChangeTreeData: Event<Reference | undefined> = this._onDidChangeTreeData.event;
 
-  constructor(private references: DocumentHighlight[], private document: TextDocument) { }
+  constructor(private references: any) { }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
   }
 
   getTreeItem(element: Reference): TreeItem {
+    console.log('----')
+    console.log(element);
     return element;
   }
 
-  getChildren(element?: any): Thenable<Reference[]> {
-    if (this.document && this.references) {
-      const references: Reference[] = this.references.map((reference: DocumentHighlight) => {
-        const textLine = this.document.lineAt((reference.range.start.line))
-        const { text } = textLine;
-        const { range } = reference;
-        const commandArgument: any = { document: this.document, range };
-        const command: Command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] }
-        return new Reference(text, this.document.uri, this.document, range, command);
-      });
+  getChildren(element: any): Thenable<Reference[]> {
+    // const references: Reference[] = this.references.map((reference: DocumentHighlight) => {
+    //   const textLine = this.document.lineAt((reference.range.start.line))
+    //   const { text } = textLine;
+    //   const { range } = reference;
+    //   const commandArgument: any = { document: this.document, range };
+    //   const command: Command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] }
+    //   return new Reference(text, this.document.uri, this.document, range, command);
+    // });
 
-      return Promise.resolve(references);
-    } else return Promise.resolve([]);
+    // return Promise.resolve(references);
+
+    return Promise.resolve([]);
+  }
+
+  getParent(element?: any): Reference {
+    return element;
   }
 }
 

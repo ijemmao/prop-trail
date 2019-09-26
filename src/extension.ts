@@ -157,9 +157,11 @@ const jumpToComponentDefinition = (component: JSXOpeningElement, target: Uri, ho
   })
 }
 
-const updateTreeView = (...args: [DocumentHighlight[], TextDocument]) => {
-  window.createTreeView('propTrailReferences', {
-    treeDataProvider: new ReferenceProvider(...args),
+const updateTreeView = (highlights: DocumentHighlight[], document: TextDocument) => {
+  const provider = new ReferenceProvider({ [document.fileName]: highlights });
+  console.log(provider);
+  const treeView = window.createTreeView('propTrailReferences', {
+    treeDataProvider: provider,
     showCollapseAll: false
   });
 }

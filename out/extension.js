@@ -130,9 +130,11 @@ const jumpToComponentDefinition = (component, target, hoverName) => {
         }
     });
 };
-const updateTreeView = (...args) => {
-    vscode_1.window.createTreeView('propTrailReferences', {
-        treeDataProvider: new references_1.ReferenceProvider(...args),
+const updateTreeView = (highlights, document) => {
+    const provider = new references_1.ReferenceProvider({ [document.fileName]: highlights });
+    console.log(provider);
+    const treeView = vscode_1.window.createTreeView('propTrailReferences', {
+        treeDataProvider: provider,
         showCollapseAll: false
     });
 };

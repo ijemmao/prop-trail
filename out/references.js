@@ -2,9 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = require("vscode");
 class ReferenceProvider {
-    constructor(references, document) {
+    constructor(references) {
         this.references = references;
-        this.document = document;
         this._onDidChangeTreeData = new vscode_1.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     }
@@ -12,22 +11,24 @@ class ReferenceProvider {
         this._onDidChangeTreeData.fire();
     }
     getTreeItem(element) {
+        console.log('----');
+        console.log(element);
         return element;
     }
     getChildren(element) {
-        if (this.document && this.references) {
-            const references = this.references.map((reference) => {
-                const textLine = this.document.lineAt((reference.range.start.line));
-                const { text } = textLine;
-                const { range } = reference;
-                const commandArgument = { document: this.document, range };
-                const command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] };
-                return new Reference(text, this.document.uri, this.document, range, command);
-            });
-            return Promise.resolve(references);
-        }
-        else
-            return Promise.resolve([]);
+        // const references: Reference[] = this.references.map((reference: DocumentHighlight) => {
+        //   const textLine = this.document.lineAt((reference.range.start.line))
+        //   const { text } = textLine;
+        //   const { range } = reference;
+        //   const commandArgument: any = { document: this.document, range };
+        //   const command: Command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] }
+        //   return new Reference(text, this.document.uri, this.document, range, command);
+        // });
+        // return Promise.resolve(references);
+        return Promise.resolve([]);
+    }
+    getParent(element) {
+        return element;
     }
 }
 exports.ReferenceProvider = ReferenceProvider;
