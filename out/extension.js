@@ -130,11 +130,14 @@ const jumpToComponentDefinition = (component, target, hoverName) => {
         }
     });
 };
+// TODO: assign correct document to highlight
 const generateTree = (highlights, document) => {
     const tree = {};
     if (tree[document.fileName])
         tree[document.fileName] = {};
-    tree[document.fileName] = Object.assign({}, highlights);
+    tree[document.fileName] = highlights.map((highlight) => {
+        return Object.assign({ document }, highlight);
+    });
     return tree;
 };
 const updateTreeView = (highlights, document) => {

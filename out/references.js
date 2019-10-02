@@ -8,22 +8,19 @@ class ReferenceProvider {
         this.nodes = {};
     }
     getTreeItem(element) {
-        const treeItem = this.getTreeObject(element.key);
+        const treeItem = this.getTreeObject(element);
         treeItem.id = element.key;
         return treeItem;
     }
-    getTreeObject(key) {
+    getTreeObject(element) {
+        const { key, command } = element;
         const treeElement = this.getTreeElement(key);
-        // const textLine = this.document.lineAt((reference.range.start.line))
-        // const { text } = textLine;
-        // const { range } = reference;
-        // const commandArgument: any = { document: this.document, range };
-        // const command: Command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] }
-        // return new Reference(text, this.document.uri, this.document, range, command);
         return {
             label: key,
             id: '',
-            collapsibleState: treeElement && Object.keys(treeElement).length ? vscode_1.TreeItemCollapsibleState.Collapsed : vscode_1.TreeItemCollapsibleState.None
+            resourceUri: this.document.uri,
+            collapsibleState: treeElement && Object.keys(treeElement).length ? vscode_1.TreeItemCollapsibleState.Collapsed : vscode_1.TreeItemCollapsibleState.None,
+            command,
         };
     }
     getTreeElement(key) {
@@ -51,40 +48,27 @@ class ReferenceProvider {
     }
     getParent({ key }) {
         const parentKey = key.substring(0, key.length - 1);
-        return parentKey ? new Key(parentKey) : void 0;
+        return parentKey ? new Reference(parentKey) : void 0;
     }
     getNode(key, element = undefined) {
         if (!this.nodes[key]) {
             if (element) {
                 const reference = this.references[element.key][parseInt(key)];
-                const textLine = this.document.lineAt((reference.range.start.line));
+                const { document, range } = reference;
+                const textLine = this.document.lineAt((range.start.line));
                 const { text } = textLine;
-                const { range } = reference;
-                const commandArgument = { document: element.key, range };
+                const commandArgument = { document, range };
                 const command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] };
-                // return new Reference(text, this.document.uri, element.key, range, command);
-                console.log(text);
-                this.nodes[key] = new Reference(text, this.document.uri, element.key, range, command);
+                this.nodes[key] = new Reference(text, document.uri, element.key, range, command);
             }
             else {
-                this.nodes[key] = new Key(key);
+                this.nodes[key] = new Reference(key);
             }
         }
         return this.nodes[key];
     }
 }
 exports.ReferenceProvider = ReferenceProvider;
-class Key {
-    constructor(key, command, label, resourceUri, document, wordRange, contextValue = 'reference') {
-        this.key = key;
-        this.command = command;
-        this.label = label;
-        this.resourceUri = resourceUri;
-        this.document = document;
-        this.wordRange = wordRange;
-        this.contextValue = contextValue;
-    }
-}
 class Reference extends vscode_1.TreeItem {
     constructor(key, resourceUri, document, wordRange, command, contextValue = 'reference') {
         super(key);

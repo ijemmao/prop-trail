@@ -1,14 +1,10 @@
 import {
   Command,
-  Event,
-  EventEmitter,
   TreeDataProvider,
   TreeItem,
   TextDocument,
   Uri,
-  DocumentHighlight,
   Range,
-  Position,
   TreeItemCollapsibleState
 } from 'vscode';
 
@@ -19,27 +15,22 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
   constructor(private references: any, private document: any) {
   }
 
-  getTreeItem(element: { key: string }): TreeItem {
-    const treeItem = this.getTreeObject(element.key);
+  getTreeItem(element: any): TreeItem {
+    const treeItem = this.getTreeObject(element);
     treeItem.id = element.key;
     return treeItem;
   }
 
-  getTreeObject(key: string) {
+  getTreeObject(element: any) {
+    const { key, command } = element;
     const treeElement = this.getTreeElement(key);
-
-
-    // const textLine = this.document.lineAt((reference.range.start.line))
-    // const { text } = textLine;
-    // const { range } = reference;
-    // const commandArgument: any = { document: this.document, range };
-    // const command: Command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] }
-    // return new Reference(text, this.document.uri, this.document, range, command);
 
     return {
       label: key,
       id: '',
-      collapsibleState: treeElement && Object.keys(treeElement).length ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None
+      resourceUri: this.document.uri,
+      collapsibleState: treeElement && Object.keys(treeElement).length ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
+      command,
     };
   }
 
@@ -74,52 +65,41 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
 
   getParent({ key }: { key: string }): { key: string } | undefined {
     const parentKey = key.substring(0, key.length - 1);
-    return parentKey ? new Key(parentKey) : void 0;
+    return parentKey ? new Reference(parentKey) : void 0;
   }
 
   getNode(key: string, element: any = undefined): { key: string } {
     if (!this.nodes[key]) {
       if (element) {
         const reference = this.references[element.key][parseInt(key)];
-        const textLine = this.document.lineAt((reference.range.start.line))
+        const { document, range } = reference;
+        const textLine = this.document.lineAt((range.start.line))
         const { text } = textLine;
-        const { range } = reference;
-        const commandArgument: any = { document: element.key, range };
+
+        const commandArgument: any = { document, range };
         const command: Command = { title: 'Jump to Reference', command: 'propTrail.jumpToReference', arguments: [commandArgument] }
-        // return new Reference(text, this.document.uri, element.key, range, command);
-        console.log(text);
-        this.nodes[key] = new Reference(text, this.document.uri, element.key, range, command);
+
+        this.nodes[key] = new Reference(text, document.uri, element.key, range, command);
       } else {
-        this.nodes[key] = new Key(key);
+        this.nodes[key] = new Reference(key);
       }
     }
     return this.nodes[key];
   }
 }
 
-class Key {
-  constructor(
-    public readonly key: string,
-    public readonly command?: Command,
-    public readonly label?: string,
-    public readonly resourceUri?: Uri,
-    public readonly document?: TextDocument,
-    public readonly wordRange?: Range,
-    public readonly contextValue: string = 'reference'
-  ) { }
-}
-
 class Reference extends TreeItem {
   constructor(
     public readonly key: string,
-    public readonly resourceUri: Uri,
-    public readonly document: TextDocument,
-    public readonly wordRange: Range,
+    public readonly resourceUri?: Uri,
+    public readonly document?: TextDocument,
+    public readonly wordRange?: Range,
     public readonly command?: Command,
     public readonly contextValue: string = 'reference'
   ) {
     super(key);
   }
 
+  // Remove whitespace from tooltips
   // tooltip = this.label.trim();
 }

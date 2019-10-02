@@ -157,10 +157,13 @@ const jumpToComponentDefinition = (component: JSXOpeningElement, target: Uri, ho
   })
 }
 
+// TODO: assign correct document to highlight
 const generateTree = (highlights: DocumentHighlight[], document: TextDocument): any => {
   const tree: any = {};
   if (tree[document.fileName]) tree[document.fileName] = {};
-  tree[document.fileName] = Object.assign({}, highlights);
+  tree[document.fileName] = highlights.map((highlight) =>{
+    return Object.assign({ document }, highlight)
+  });
   return tree;
 }
 
