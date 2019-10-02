@@ -7,9 +7,19 @@ class ReferenceProvider {
         this.document = document;
         this.nodes = {};
     }
+    // Creates a unique for each found reference
+    generateKey(wordRange) {
+        if (!wordRange)
+            return undefined;
+        const { start: { line: startLine, character: startCharacter }, end: { line: endLine, character: endCharacter } } = wordRange;
+        return `${startLine}-${startCharacter}-${endLine}-${endCharacter}`;
+    }
     getTreeItem(element) {
         const treeItem = this.getTreeObject(element);
-        treeItem.id = element.key;
+        console.log('-------');
+        const key = this.generateKey(element.wordRange);
+        console.log(element);
+        treeItem.id = key || element.key;
         return treeItem;
     }
     getTreeObject(element) {
@@ -25,6 +35,7 @@ class ReferenceProvider {
     }
     getTreeElement(key) {
         let parent = this.references;
+        // TODO: No tree item with id '1//Users/ionwuzulike/...'
         parent = parent[key];
         return parent;
     }

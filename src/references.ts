@@ -15,9 +15,28 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
   constructor(private references: any, private document: any) {
   }
 
+  // Creates a unique for each found reference
+  generateKey(wordRange: any): string | undefined {
+    if (!wordRange) return undefined;
+    const {
+      start: {
+        line: startLine,
+        character: startCharacter
+      },
+      end: {
+        line: endLine,
+        character: endCharacter
+      }} = wordRange;
+
+    return `${startLine}-${startCharacter}-${endLine}-${endCharacter}`
+  }
+
   getTreeItem(element: any): TreeItem {
     const treeItem = this.getTreeObject(element);
-    treeItem.id = element.key;
+    console.log('-------')
+    const key = this.generateKey(element.wordRange);
+    console.log(element)
+    treeItem.id = key || element.key;
     return treeItem;
   }
 
@@ -36,6 +55,7 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
 
   getTreeElement(key: string): any {
     let parent = this.references;
+    // TODO: No tree item with id '1//Users/ionwuzulike/...'
     parent = parent[key];
     return parent;
 
