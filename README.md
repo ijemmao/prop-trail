@@ -25,3 +25,8 @@ Initial release of prop-trials.
 * Update information in README.
 * Refactor codebase to remove `v1` directory.
 * Address source mapping issues.
+
+### 1.1.0
+
+* Restructure Tree View where file paths are included
+* Tree View is revealed when 'PROP TRAIL' menu item is selected
