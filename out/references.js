@@ -16,20 +16,17 @@ class ReferenceProvider {
     }
     getTreeItem(element) {
         const treeItem = this.getTreeObject(element);
-        console.log('-------');
-        const key = this.generateKey(element.wordRange);
-        console.log(element);
-        treeItem.id = key || element.key;
         return treeItem;
     }
     getTreeObject(element) {
         const { key, command } = element;
         const treeElement = this.getTreeElement(key);
+        const realKey = this.generateKey(element.wordRange);
         return {
             label: key,
-            id: '',
+            key: realKey || element.key,
             resourceUri: this.document.uri,
-            collapsibleState: treeElement && Object.keys(treeElement).length ? vscode_1.TreeItemCollapsibleState.Collapsed : vscode_1.TreeItemCollapsibleState.None,
+            collapsibleState: treeElement && Object.keys(treeElement).length ? vscode_1.TreeItemCollapsibleState.Expanded : vscode_1.TreeItemCollapsibleState.None,
             command,
         };
     }

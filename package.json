@@ -72,8 +72,7 @@
         "aliases": [
           "React",
           "js"
-        ],
-        "firstLine": "import React, { Component } from 'react';"
+        ]
       }
     ]
   },

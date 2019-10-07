@@ -26,7 +26,7 @@ const PLUGINS = [
     'exportExtensions',
     'asyncGenerators'
 ];
-let numOfRefs = 0;
+let treeView = null;
 function activate(context) {
     let disposable = vscode_1.commands.registerCommand('extension.propTrail', (args) => {
         const editor = vscode_1.window.activeTextEditor;
@@ -47,6 +47,10 @@ function activate(context) {
         };
         vscode_1.window.showTextDocument(document, options);
     });
+    let key = '/Users/IjemmaOnwuzulike 1/Documents/Personal Projects/timetracker/web-app/src/screens/Calendar/Calendar.js';
+    vscode_1.commands.registerCommand('testView.reveal', () => __awaiter(this, void 0, void 0, function* () {
+        yield treeView.reveal({ key }, { focus: true, select: false, expand: true });
+    }));
     const propTrail = (document, position) => __awaiter(this, void 0, void 0, function* () {
         const ast = generateAst(document);
         babel_traverse_1.default(ast, {
@@ -57,6 +61,7 @@ function activate(context) {
                 if (babel_types_1.isJSXAttribute(path.node)
                     && babel_types_1.isJSXOpeningElement(path.parent)
                     && attributeInElement(path.parent, hoverName)) {
+                    // TODO: call this function once
                     jumpToComponentDefinition(path.parent, target, hoverName);
                 }
             }
@@ -140,13 +145,13 @@ const generateTree = (highlights, document) => {
     });
     return tree;
 };
-const updateTreeView = (highlights, document) => {
+const updateTreeView = (highlights, document) => __awaiter(void 0, void 0, void 0, function* () {
     const provider = new references_1.ReferenceProvider(generateTree(highlights, document), document);
-    const treeView = vscode_1.window.createTreeView('propTrailReferences', {
+    treeView = vscode_1.window.createTreeView('propTrailReferences', {
         treeDataProvider: provider,
         showCollapseAll: false
     });
-};
+});
 function deactivate() { }
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map

@@ -40,7 +40,7 @@ const PLUGINS: PluginName[] = [
   'asyncGenerators'
 ];
 
-let numOfRefs = 0;
+let treeView: any = null;
 export function activate(context: ExtensionContext) {
   let disposable = commands.registerCommand('extension.propTrail', (args) => {
     const editor: TextEditor | undefined = window.activeTextEditor;
@@ -63,6 +63,11 @@ export function activate(context: ExtensionContext) {
     window.showTextDocument(document, options);
   });
 
+  let key = '/Users/IjemmaOnwuzulike 1/Documents/Personal Projects/timetracker/web-app/src/screens/Calendar/Calendar.js';
+  commands.registerCommand('testView.reveal', async () => {
+    await treeView.reveal({ key }, { focus: true, select: false, expand: true });
+  });
+
   const propTrail = async (document: TextDocument, position: Position) => {
     const ast = generateAst(document);
 
@@ -74,6 +79,7 @@ export function activate(context: ExtensionContext) {
         if (isJSXAttribute(path.node)
           && isJSXOpeningElement(path.parent)
           && attributeInElement(path.parent, hoverName)) {
+            // TODO: call this function once
           jumpToComponentDefinition(path.parent, target, hoverName);
         }
       }
@@ -167,9 +173,9 @@ const generateTree = (highlights: DocumentHighlight[], document: TextDocument): 
   return tree;
 }
 
-const updateTreeView = (highlights: DocumentHighlight[], document: TextDocument) => {
+const updateTreeView = async (highlights: DocumentHighlight[], document: TextDocument) => {
   const provider = new ReferenceProvider(generateTree(highlights, document), document);
-  const treeView = window.createTreeView('propTrailReferences', {
+  treeView = window.createTreeView('propTrailReferences', {
     treeDataProvider: provider,
     showCollapseAll: false
   });

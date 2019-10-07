@@ -12,8 +12,7 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
 
   public nodes: any = {};
 
-  constructor(private references: any, private document: any) {
-  }
+  constructor(public references: any, private document: any) {}
 
   // Creates a unique for each found reference
   generateKey(wordRange: any): string | undefined {
@@ -33,22 +32,18 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
 
   getTreeItem(element: any): TreeItem {
     const treeItem = this.getTreeObject(element);
-    console.log('-------')
-    const key = this.generateKey(element.wordRange);
-    console.log(element)
-    treeItem.id = key || element.key;
     return treeItem;
   }
 
   getTreeObject(element: any) {
     const { key, command } = element;
     const treeElement = this.getTreeElement(key);
-
+    const realKey = this.generateKey(element.wordRange);
     return {
       label: key,
-      id: '',
+      key: realKey || element.key,
       resourceUri: this.document.uri,
-      collapsibleState: treeElement && Object.keys(treeElement).length ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
+      collapsibleState: treeElement && Object.keys(treeElement).length ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.None,
       command,
     };
   }
@@ -61,7 +56,7 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
 
   }
 
-  getChildren(element: any): { key: string }[] {
+  getChildren(element: any): Reference[] {
     const elements = (() => {
       if (!element) {
         return Object.keys(this.references)
@@ -72,7 +67,7 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
         return Object.keys(treeElement);
       }
       return [];
-    })()
+    })();
     
     return elements.map(key => {
       if (element) {
@@ -88,7 +83,7 @@ export class ReferenceProvider implements TreeDataProvider<{ key: string }> {
     return parentKey ? new Reference(parentKey) : void 0;
   }
 
-  getNode(key: string, element: any = undefined): { key: string } {
+  getNode(key: string, element: any = undefined): Reference {
     if (!this.nodes[key]) {
       if (element) {
         const reference = this.references[element.key][parseInt(key)];
@@ -119,7 +114,4 @@ class Reference extends TreeItem {
   ) {
     super(key);
   }
-
-  // Remove whitespace from tooltips
-  // tooltip = this.label.trim();
 }
