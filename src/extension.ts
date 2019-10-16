@@ -40,7 +40,6 @@ const PLUGINS: PluginName[] = [
   'asyncGenerators'
 ];
 
-let treeView: any = null;
 export function activate(context: ExtensionContext) {
   let disposable = commands.registerCommand('extension.propTrail', (args) => {
     const editor: TextEditor | undefined = window.activeTextEditor;
@@ -63,8 +62,7 @@ export function activate(context: ExtensionContext) {
     window.showTextDocument(document, options);
   });
 
-  let key = '/Users/IjemmaOnwuzulike 1/Documents/Personal Projects/timetracker/web-app/src/screens/Calendar/Calendar.js';
-  commands.registerCommand('testView.reveal', async () => {
+  const revealTree = commands.registerCommand('propTrailReferences.reveal', async (treeView, key) => {
     await treeView.reveal({ key }, { focus: true, select: false, expand: true });
   });
 
@@ -85,7 +83,7 @@ export function activate(context: ExtensionContext) {
       }
     });
   }
-  context.subscriptions.push(disposable, jumpToReference);
+  context.subscriptions.push(disposable, jumpToReference, revealTree);
 }
 
 const attributeInElement = (component: JSXOpeningElement, hoverName: string) => {
@@ -175,10 +173,12 @@ const generateTree = (highlights: DocumentHighlight[], document: TextDocument): 
 
 const updateTreeView = async (highlights: DocumentHighlight[], document: TextDocument) => {
   const provider = new ReferenceProvider(generateTree(highlights, document), document);
-  treeView = window.createTreeView('propTrailReferences', {
+  const treeView = window.createTreeView('propTrailReferences', {
     treeDataProvider: provider,
     showCollapseAll: false
   });
+  let key = '/Users/IjemmaOnwuzulike 1/Documents/Personal Projects/timetracker/web-app/src/screens/Calendar/Calendar.js';
+  commands.executeCommand('propTrailReferences.reveal', treeView, key);
 }
 
 export function deactivate() { }

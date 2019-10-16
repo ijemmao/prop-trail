@@ -26,7 +26,6 @@ const PLUGINS = [
     'exportExtensions',
     'asyncGenerators'
 ];
-let treeView = null;
 function activate(context) {
     let disposable = vscode_1.commands.registerCommand('extension.propTrail', (args) => {
         const editor = vscode_1.window.activeTextEditor;
@@ -47,8 +46,7 @@ function activate(context) {
         };
         vscode_1.window.showTextDocument(document, options);
     });
-    let key = '/Users/IjemmaOnwuzulike 1/Documents/Personal Projects/timetracker/web-app/src/screens/Calendar/Calendar.js';
-    vscode_1.commands.registerCommand('testView.reveal', () => __awaiter(this, void 0, void 0, function* () {
+    const revealTree = vscode_1.commands.registerCommand('propTrailReferences.reveal', (treeView, key) => __awaiter(this, void 0, void 0, function* () {
         yield treeView.reveal({ key }, { focus: true, select: false, expand: true });
     }));
     const propTrail = (document, position) => __awaiter(this, void 0, void 0, function* () {
@@ -67,7 +65,7 @@ function activate(context) {
             }
         });
     });
-    context.subscriptions.push(disposable, jumpToReference);
+    context.subscriptions.push(disposable, jumpToReference, revealTree);
 }
 exports.activate = activate;
 const attributeInElement = (component, hoverName) => {
@@ -147,10 +145,12 @@ const generateTree = (highlights, document) => {
 };
 const updateTreeView = (highlights, document) => __awaiter(void 0, void 0, void 0, function* () {
     const provider = new references_1.ReferenceProvider(generateTree(highlights, document), document);
-    treeView = vscode_1.window.createTreeView('propTrailReferences', {
+    const treeView = vscode_1.window.createTreeView('propTrailReferences', {
         treeDataProvider: provider,
         showCollapseAll: false
     });
+    let key = '/Users/IjemmaOnwuzulike 1/Documents/Personal Projects/timetracker/web-app/src/screens/Calendar/Calendar.js';
+    vscode_1.commands.executeCommand('propTrailReferences.reveal', treeView, key);
 });
 function deactivate() { }
 exports.deactivate = deactivate;

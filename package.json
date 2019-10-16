@@ -5,9 +5,13 @@
     "type": "git",
     "url": "https://github.com/ijemmao/prop-trail"
   },
+  "galleryBanner": {
+    "color": "#2B2B2B",
+    "theme": "dark"
+  },
+  "icon": "logo.png",
   "displayName": "Prop Trail",
   "description": "Tracks all references of props within React components",
-  "enableProposedApi": true,
   "version": "1.1.0",
   "engines": {
     "vscode": "^1.38.0"
@@ -16,7 +20,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:javascriptreact"
+    "onLanguage:javascriptreact",
+    "onView:propTrailReferences"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -28,6 +33,10 @@
       {
         "command": "propTrail.jumpToReference",
         "title": "Edit Entry"
+      },
+      {
+        "command": "propTrailReferences.reveal",
+        "title": "Prop Trail: Reveal"
       }
     ],
     "viewsContainers": {
