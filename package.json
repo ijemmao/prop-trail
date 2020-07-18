@@ -109,6 +109,6 @@
     "@types/lodash": "^4.14.138",
     "babel-traverse": "^6.26.0",
     "babylon": "^6.18.0",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.19"
   }
 }
