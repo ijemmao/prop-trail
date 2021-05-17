@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const babel_traverse_1 = require("babel-traverse");
+const traverse_1 = require("@babel/traverse");
 const references_1 = require("./references");
 const lodash_1 = require("lodash");
 const vscode_1 = require("vscode");
@@ -74,7 +74,7 @@ exports.activate = (context) => {
     }));
     const propTrail = (document, position) => __awaiter(void 0, void 0, void 0, function* () {
         const ast = generateAst(document);
-        babel_traverse_1.default(ast, {
+        traverse_1.default(ast, {
             enter(path) {
                 const { uri: target } = document;
                 const range = document.getWordRangeAtPosition(position);
@@ -140,7 +140,7 @@ const jumpToComponentDefinition = (component, target, hoverName) => {
             vscode_1.workspace.openTextDocument(uri).then(document => {
                 const ast = generateAst(document);
                 let highlightObjects = [];
-                babel_traverse_1.default(ast, {
+                traverse_1.default(ast, {
                     enter(path) {
                         if (babel_types_1.isIdentifier(path.node) && !babel_types_1.isArrowFunctionExpression(path.parent) && path.node.name === hoverName) {
                             // TODO: runtime O(n^2)

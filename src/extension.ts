@@ -1,4 +1,4 @@
-import traverse, { NodePath } from 'babel-traverse';
+import traverse, { NodePath } from '@babel/traverse';
 import { ReferenceProvider } from './references';
 import { find } from 'lodash';
 import {
@@ -7,7 +7,7 @@ import {
   workspace,
   ExtensionContext,
   DocumentHighlight,
-  Location,
+  LocationLink,
   Position,
   TextDocument,
   TextDocumentShowOptions,
@@ -155,7 +155,7 @@ const highlightObjectOccurrences = (document: TextDocument, highlightObjects: Id
 const jumpToComponentDefinition = (component: JSXOpeningElement, target: Uri, hoverName: string) => {
   const { line, column } = component.loc.start;
   const componentPosition = new Position(line - 1, column + 3);
-  commands.executeCommand<Location[]>('vscode.executeDefinitionProvider', target, componentPosition).then(references => {
+  commands.executeCommand<LocationLink[]>('vscode.executeDefinitionProvider', target, componentPosition).then(references => {
     references = references || [];
 
     if (references) {
