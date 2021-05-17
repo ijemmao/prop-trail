@@ -44,10 +44,18 @@
         {
           "id": "propTrailReferences",
           "title": "Prop Trail References",
-          "icon": "resources/icon.svg"
+          "contextualTitle": "Prop Trial References",
+          "icon": "resources/icon.svg",
+          "visibility": "hidden"
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "propTrailReferences",
+        "contents": "No React prop trails found. Right-click on a React prop to see its trail."
+      }
+    ],
     "views": {
       "propTrailReferences": [
         {
@@ -99,16 +107,15 @@
     "@types/vscode": "^1.38.0",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
-    "typescript": "^3.3.1",
     "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
     "vscode-test": "^1.2.0"
   },
   "dependencies": {
+    "@babel/parser": "^7.14.2",
     "@types/babel-traverse": "^6.25.5",
-    "@types/babylon": "^6.16.5",
     "@types/lodash": "^4.14.138",
     "babel-traverse": "^6.26.0",
-    "babylon": "^6.18.0",
     "lodash": "^4.17.15"
   }
 }
