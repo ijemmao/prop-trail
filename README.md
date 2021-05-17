@@ -30,3 +30,7 @@ Initial release of prop-trials.
 
 * Restructure Tree View where file paths are included
 * Tree View is revealed when 'PROP TRAIL' menu item is selected
+
+### 1.1.3
+
+* Handle ES2020 syntax

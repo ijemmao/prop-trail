@@ -15,10 +15,7 @@ import {
   TextEditor,
   Range,
 } from 'vscode';
-import {
-  parse,
-  PluginName
-} from 'babylon';
+import { parse, ParserPlugin } from '@babel/parser';
 import {
   isIdentifier,
   isJSXOpeningElement,
@@ -28,24 +25,47 @@ import {
   Identifier
 } from 'babel-types';
 
-const PLUGINS: PluginName[] = [
-  'jsx',
-  'flow',
-  'classConstructorCall',
-  'doExpressions',
-  'objectRestSpread',
-  'decorators',
+const PLUGINS: ParserPlugin[] = [
+  'asyncDoExpressions',
+  'asyncGenerators',
+  'bigInt',
+  'classPrivateMethods',
+  'classPrivateProperties',
   'classProperties',
-  'exportExtensions',
-  'asyncGenerators'
+  'classStaticBlock',
+  'decimal',
+  'decorators-legacy',
+  'doExpressions',
+  'dynamicImport',
+  'estree',
+  'exportDefaultFrom',
+  'flowComments',
+  'functionBind',
+  'functionSent',
+  'importMeta',
+  'jsx',
+  'logicalAssignment',
+  'importAssertions',
+  'moduleStringNames',
+  'nullishCoalescingOperator',
+  'numericSeparator',
+  'objectRestSpread',
+  'optionalCatchBinding',
+  'optionalChaining',
+  'partialApplication',
+  'privateIn',
+  'throwExpressions',
+  'topLevelAwait',
+  'typescript',
+  'v8intrinsic',
 ];
 
-export function activate(context: ExtensionContext) {
-  let disposable = commands.registerCommand('extension.propTrail', (args) => {
+export const activate = (context: ExtensionContext) => {
+  const disposable = commands.registerCommand('extension.propTrail', () => {
     const editor: TextEditor | undefined = window.activeTextEditor;
     if (editor) {
-      const { document } = editor;
-      const { start: { line, character } } = editor.selection;
+      const { document, selection } = editor;
+      const { start: { line, character } } = selection;
       const position = new Position(line, character);
       propTrail(document, position);
     }
@@ -93,8 +113,8 @@ const attributeInElement = (component: JSXOpeningElement, hoverName: string) => 
 }
 
 const generateAst = (document: TextDocument) => {
-  const text = document.getText();
-  return parse(text, { sourceType: "module", plugins: PLUGINS });
+  const code = document.getText();
+  return parse(code, { sourceType: 'module', plugins: PLUGINS });
 }
 
 const highlightObjectOccurrences = (document: TextDocument, highlightObjects: Identifier[]) => {
@@ -140,7 +160,7 @@ const jumpToComponentDefinition = (component: JSXOpeningElement, target: Uri, ho
 
     if (references) {
       const reference = references[0];
-      const uri = Uri.file(reference.uri.path);
+      const uri = Uri.file(reference.targetUri.path);
       workspace.openTextDocument(uri).then(document => {
         const ast = generateAst(document);
         let highlightObjects: Identifier[] = [];

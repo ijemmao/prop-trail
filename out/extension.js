@@ -13,25 +13,48 @@ const babel_traverse_1 = require("babel-traverse");
 const references_1 = require("./references");
 const lodash_1 = require("lodash");
 const vscode_1 = require("vscode");
-const babylon_1 = require("babylon");
+const parser_1 = require("@babel/parser");
 const babel_types_1 = require("babel-types");
 const PLUGINS = [
-    'jsx',
-    'flow',
-    'classConstructorCall',
-    'doExpressions',
-    'objectRestSpread',
-    'decorators',
+    'asyncDoExpressions',
+    'asyncGenerators',
+    'bigInt',
+    'classPrivateMethods',
+    'classPrivateProperties',
     'classProperties',
-    'exportExtensions',
-    'asyncGenerators'
+    'classStaticBlock',
+    'decimal',
+    'decorators-legacy',
+    'doExpressions',
+    'dynamicImport',
+    'estree',
+    'exportDefaultFrom',
+    'flowComments',
+    'functionBind',
+    'functionSent',
+    'importMeta',
+    'jsx',
+    'logicalAssignment',
+    'importAssertions',
+    'moduleStringNames',
+    'nullishCoalescingOperator',
+    'numericSeparator',
+    'objectRestSpread',
+    'optionalCatchBinding',
+    'optionalChaining',
+    'partialApplication',
+    'privateIn',
+    'throwExpressions',
+    'topLevelAwait',
+    'typescript',
+    'v8intrinsic',
 ];
-function activate(context) {
-    let disposable = vscode_1.commands.registerCommand('extension.propTrail', (args) => {
+exports.activate = (context) => {
+    const disposable = vscode_1.commands.registerCommand('extension.propTrail', () => {
         const editor = vscode_1.window.activeTextEditor;
         if (editor) {
-            const { document } = editor;
-            const { start: { line, character } } = editor.selection;
+            const { document, selection } = editor;
+            const { start: { line, character } } = selection;
             const position = new vscode_1.Position(line, character);
             propTrail(document, position);
         }
@@ -46,10 +69,10 @@ function activate(context) {
         };
         vscode_1.window.showTextDocument(document, options);
     });
-    const revealTree = vscode_1.commands.registerCommand('propTrailReferences.reveal', (treeView, key) => __awaiter(this, void 0, void 0, function* () {
+    const revealTree = vscode_1.commands.registerCommand('propTrailReferences.reveal', (treeView, key) => __awaiter(void 0, void 0, void 0, function* () {
         yield treeView.reveal({ key }, { focus: true, select: false, expand: true });
     }));
-    const propTrail = (document, position) => __awaiter(this, void 0, void 0, function* () {
+    const propTrail = (document, position) => __awaiter(void 0, void 0, void 0, function* () {
         const ast = generateAst(document);
         babel_traverse_1.default(ast, {
             enter(path) {
@@ -66,8 +89,7 @@ function activate(context) {
         });
     });
     context.subscriptions.push(disposable, jumpToReference, revealTree);
-}
-exports.activate = activate;
+};
 const attributeInElement = (component, hoverName) => {
     for (const attribute of component.attributes) {
         if (attribute.name && attribute.name.name === hoverName)
@@ -76,8 +98,8 @@ const attributeInElement = (component, hoverName) => {
     return false;
 };
 const generateAst = (document) => {
-    const text = document.getText();
-    return babylon_1.parse(text, { sourceType: "module", plugins: PLUGINS });
+    const code = document.getText();
+    return parser_1.parse(code, { sourceType: 'module', plugins: PLUGINS });
 };
 const highlightObjectOccurrences = (document, highlightObjects) => {
     if (highlightObjects.length) {
@@ -114,7 +136,7 @@ const jumpToComponentDefinition = (component, target, hoverName) => {
         references = references || [];
         if (references) {
             const reference = references[0];
-            const uri = vscode_1.Uri.file(reference.uri.path);
+            const uri = vscode_1.Uri.file(reference.targetUri.path);
             vscode_1.workspace.openTextDocument(uri).then(document => {
                 const ast = generateAst(document);
                 let highlightObjects = [];
