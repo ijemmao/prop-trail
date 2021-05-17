@@ -119,7 +119,7 @@
     "@types/babel__traverse": "^7.11.1",
     "@types/lodash": "^4.14.138",
     "babel-types": "^6.26.0",
-    "lodash": "^4.17.18",
+    "lodash": "^4.17.21",
     "vsce": "^1.88.0"
   }
 }
